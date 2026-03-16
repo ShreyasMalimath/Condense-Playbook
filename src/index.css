@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 15% 6%;
+    /* Deep muted slate */
+    --foreground: 210 20% 90%;
+    /* Soft off-white */
+
+    --card: 220 15% 8%;
+    --card-foreground: 210 20% 90%;
+
+    --popover: 220 15% 8%;
+    --popover-foreground: 210 20% 90%;
+
+    --primary: 210 30% 60%;
+    /* Muted elegant blue */
+    --primary-foreground: 220 15% 6%;
+
+    --secondary: 220 10% 15%;
+    --secondary-foreground: 210 20% 90%;
+
+    --muted: 220 10% 12%;
+    --muted-foreground: 215 15% 60%;
+
+    --accent: 190 20% 55%;
+    /* Muted subtle teal/silver */
+    --accent-foreground: 220 15% 6%;
+
+    --destructive: 0 40% 40%;
+    --destructive-foreground: 210 20% 90%;
+
+    --border: 220 10% 15%;
+    --input: 220 10% 15%;
+    --ring: 210 30% 60%;
+
+    --radius: 0.5rem;
+    /* Softer, slightly less rounded corners for elegance */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Glassmorphism utilities */
+.glass {
+  @apply bg-white/5 backdrop-blur-md border border-white/10;
+}
+
+/* Smooth gradients for background */
+.hero-gradient {
+  background: radial-gradient(circle at 50% 0%, hsl(var(--primary) / 0.15) 0%, transparent 50%);
+}
