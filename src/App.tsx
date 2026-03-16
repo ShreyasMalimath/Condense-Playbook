@@ -99,7 +99,15 @@ function AppContent({ user, setUser }: { user: UserInfo | null, setUser: (u: Use
       <Navigation
         user={user}
         onLogout={handleLogout}
-        onAdmin={() => setCurrentView('admin')}
+        onAdmin={() => {
+          const password = window.prompt("Enter Admin Security Passcode:");
+          const adminPass = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
+          if (password === adminPass) {
+            setCurrentView('admin');
+          } else {
+            alert("Security Breach: Invalid Admin Credentials.");
+          }
+        }}
         onDashboard={handleReturnToDashboard}
         isAdminView={currentView === 'admin'}
       />

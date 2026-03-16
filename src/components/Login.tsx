@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ShieldCheck, Cpu, Key, AlertCircle, RefreshCw } from 'lucide-react';
 import { Card } from './Card';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface LoginProps {
     onStart: (name: string, company: string, isReturning: boolean) => void;
@@ -62,6 +64,18 @@ export const Login: React.FC<LoginProps> = ({ onStart }) => {
 
                 localStorage.setItem('condense_users', JSON.stringify(users));
                 localStorage.setItem('condense_active_session', username);
+
+                // Sync basic user info to Firestore for Admin view
+                try {
+                    await setDoc(doc(db, 'users', username), {
+                        username: username,
+                        companyCode: company.trim(),
+                        lastActive: serverTimestamp()
+                    }, { merge: true });
+                } catch (e) {
+                    console.warn("Firestore user sync skipped:", e);
+                }
+
                 onStart(username, company.trim(), false);
             } else {
                 // Log In
@@ -79,6 +93,18 @@ export const Login: React.FC<LoginProps> = ({ onStart }) => {
                 }
 
                 localStorage.setItem('condense_active_session', username);
+
+                // Sync basic user info to Firestore for Admin view
+                try {
+                    await setDoc(doc(db, 'users', username), {
+                        username: username,
+                        companyCode: user.company,
+                        lastActive: serverTimestamp()
+                    }, { merge: true });
+                } catch (e) {
+                    console.warn("Firestore user sync skipped:", e);
+                }
+
                 onStart(username, user.company, true);
             }
         } catch (err) {

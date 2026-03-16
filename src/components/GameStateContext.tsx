@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface GameState {
     xp: number;
@@ -71,6 +73,29 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
             missionScores
         };
         localStorage.setItem(`condense_state_${userId}`, JSON.stringify(stateToSave));
+
+        // Sync to Firebase for Admin Telemetrics
+        const syncToFirebase = async () => {
+            try {
+                // Ensure the user doc exists/updates with the latest stats
+                const userRef = doc(db, 'users', userId);
+                await setDoc(userRef, {
+                    username: userId,
+                    xp: xp,
+                    accuracy: totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0,
+                    modulesCompleted: completedMissions.length,
+                    lastActive: serverTimestamp(),
+                    quizResults: missionScores,
+                    // We don't have companyCode in the state context yet, 
+                    // ideally this would be passed from Login or fetched from a user profile doc
+                }, { merge: true });
+            } catch (err) {
+                // Silently fail if Firebase isn't configured yet
+                console.warn("Firestore sync skipped (check Firebase config):", err);
+            }
+        };
+
+        syncToFirebase();
     }, [userId, isStateLoaded, xp, completedMissions, correctAnswers, totalQuestions, missionScores]);
 
     const unlockedMissionsCount = completedMissions.length + 1; // Always unlock next one
