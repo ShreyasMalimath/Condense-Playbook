@@ -44,8 +44,13 @@ export const GamifiedDashboard: React.FC<GamifiedDashboardProps> = ({ onSelectMi
                 <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] -mr-20 -mt-20 pointer-events-none" />
                 <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                     <div className="md:col-span-2">
-                        <div className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-bold tracking-wider mb-4 border border-emerald-500/30">
-                            LEVEL {level} RECRUIT
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-bold tracking-wider border border-emerald-500/30">
+                                LEVEL {level} RECRUIT
+                            </div>
+                            <div className={`px-3 py-1 rounded-full text-xs font-bold border ${isFirebaseConfigured ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'}`}>
+                                {isFirebaseConfigured ? 'DATABASE: CLOUD SYNC' : 'DATABASE: LOCAL ONLY'}
+                            </div>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">
                             Sales Playbook
