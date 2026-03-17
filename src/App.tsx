@@ -192,7 +192,7 @@ export default function App() {
   if (isInitializing) return null;
 
   return (
-    <GameProvider userId={user?.name}>
+    <GameProvider key={user?.name || 'anonymous'} userId={user?.name}>
       <AppContent user={user} setUser={setUser} />
     </GameProvider>
   );

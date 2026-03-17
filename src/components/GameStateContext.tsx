@@ -26,6 +26,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [missionScores, setMissionScores] = useState<Record<string, { score: number, total: number }>>({});
     const [isStateLoaded, setIsStateLoaded] = useState(false);
+    const [loadedUserId, setLoadedUserId] = useState<string | undefined>(undefined);
     const [isFirebaseConfigured, setIsFirebaseConfigured] = useState(false);
 
     useEffect(() => {
@@ -98,6 +99,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
                     }
                 }
             } finally {
+                setLoadedUserId(userId);
                 setIsStateLoaded(true);
             }
         };
@@ -106,7 +108,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
     }, [userId]);
 
     useEffect(() => {
-        if (!userId || !isStateLoaded) return;
+        if (!userId || !isStateLoaded || loadedUserId !== userId) return;
 
         const stateToSave = {
             xp,
