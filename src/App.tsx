@@ -163,13 +163,19 @@ export default function App() {
       try {
         const activeSession = localStorage.getItem('condense_active_session');
         if (activeSession) {
-          const usersStr = localStorage.getItem('condense_users');
-          if (usersStr) {
-            const users = JSON.parse(usersStr);
-            const userData = users[activeSession];
-            if (userData) {
-              setUser({ name: activeSession, company: userData.company });
-            }
+          // Verify session still exists/is valid in Firestore
+          const { db } = await import('./lib/firebase');
+          const { doc, getDoc } = await import('firebase/firestore');
+          
+          const userRef = doc(db, 'users', activeSession);
+          const userSnap = await getDoc(userRef);
+          
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setUser({ name: activeSession, company: userData.companyCode });
+          } else {
+            // Invalid session
+            localStorage.removeItem('condense_active_session');
           }
         }
       } catch (e) {
