@@ -217,7 +217,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             setMessages(prev => [...prev, {
                 id: `error - ${Date.now()} `,
                 role: 'system',
-                content: 'SYSTEM CONNECTION ERROR. Could not reach the CTO. Please ensure VITE_GEMINI_API_KEY is properly set in the environment to enable Live AI Simulation.'
+                content: 'SYSTEM CONNECTION ERROR. Could not reach the CTO. Please ensure GEMINI_API_KEY is properly set in the environment to enable Live AI Simulation.'
             }]);
         } finally {
             setIsTyping(false);
