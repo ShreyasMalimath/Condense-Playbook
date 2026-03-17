@@ -133,6 +133,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
                     lastActive: serverTimestamp(),
                     quizResults: missionScores,
                 }, { merge: true });
+                console.log("Cloud sync successful for user:", userId);
             } catch (err) {
                 // Silently fail if Firebase isn't configured yet
                 console.warn("Firestore sync skipped (check Firebase config):", err);

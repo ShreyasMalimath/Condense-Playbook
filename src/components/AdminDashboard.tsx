@@ -47,7 +47,7 @@ export const AdminDashboard: React.FC = () => {
         } catch (err: unknown) {
             console.error("Error fetching admin data:", err);
             // We don't want to crash if Firebase isn't set up yet, we'll just show empty state
-            setError("Waiting for Firebase configuration... Ensure your Firebase keys are added to connect.");
+            setError("Telemetry Fetch Error: If you see 'Permission Denied' in console, please update your Firestore Rules to allow 'list' on the users collection. Also verify VERCEL environment keys.");
         } finally {
             setLoading(false);
         }
