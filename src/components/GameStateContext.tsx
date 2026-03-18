@@ -118,8 +118,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
         if (!userId || !isStateLoaded || loadedUserId !== userId) return;
 
         // DATA MIGRATION: Deflate legacy inflated XP (from the multiplier bug)
-        // Max possible now: 13 missions (1300) + Boss (2000) = 3300
-        const MAX_POSSIBLE_XP = 3300; 
+        // Max possible now: 11 missions (1100) + Boss (2000) = 3100
+        const MAX_POSSIBLE_XP = 3100; 
         if (xp > MAX_POSSIBLE_XP) {
             console.log("Deflating legacy XP for user:", userId);
             setXp(MAX_POSSIBLE_XP);
