@@ -46,7 +46,7 @@ export default async function handler(req: Request): Promise<Response> {
         }
 
         // Call Gemini REST API directly (edge-compatible, no Node SDK needed)
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         const geminiRes = await fetch(geminiUrl, {
             method: 'POST',

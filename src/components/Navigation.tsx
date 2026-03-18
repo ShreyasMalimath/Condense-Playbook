@@ -74,10 +74,10 @@ export const Navigation: React.FC<NavigationProps> = ({ user, onLogout, onAdmin,
                         ) : (
                             <button
                                 onClick={onAdmin}
-                                className="px-4 py-2 bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 text-sm font-medium rounded-xl transition-all border border-sky-500/20 flex items-center gap-2"
+                                className="px-4 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-sm font-bold rounded-xl transition-all border border-emerald-500/20 flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
                             >
                                 <Target className="w-4 h-4" />
-                                Admin
+                                Admin Panel
                             </button>
                         )
                     )}
