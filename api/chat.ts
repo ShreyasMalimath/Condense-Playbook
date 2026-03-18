@@ -45,8 +45,8 @@ export default async function handler(req: Request): Promise<Response> {
             });
         }
 
-        // Call Gemini REST API directly (stable v1 endpoint)
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        // Call Gemini REST API directly (latest experimental flash model)
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
 
         const geminiRes = await fetch(geminiUrl, {
             method: 'POST',
