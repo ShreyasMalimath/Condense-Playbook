@@ -30,7 +30,7 @@ interface Persona {
 // AI is proxied through /api/chat — no client-side API key needed
 
 export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) => {
-    const { addXP, completeMission, saveChatTranscript } = useGameState();
+    const { addXP, completeMission, saveChatTranscript, completedMissions, xp } = useGameState();
     
     const personas: Record<string, Persona> = {
         developer: {
@@ -206,7 +206,10 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
 
             if (isWin) {
                 setBattleStatus('won');
-                addXP(2000);
+                // Only grant bonus XP if this mission hasn't been completed before
+                if (!completedMissions.includes('boss-battle')) {
+                    addXP(2000);
+                }
                 saveChatTranscript(selectedPersona!.id, [...messages, newUserMessage, newBotMessage].filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })), 'won');
             } else if (turnsLeft - 1 <= 0) {
                 setBattleStatus('lost');
@@ -393,6 +396,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
         );
     }
 
+    const getLevelTitle = (lvl: number) => {
+        if (lvl >= 7) return "ARCHITECT";
+        if (lvl >= 5) return "VETERAN";
+        if (lvl >= 3) return "SPECIALIST";
+        return "RECRUIT";
+    };
+
+    const level = Math.floor(xp / 500) + 1;
+
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
 
@@ -419,8 +431,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
                         Back to Dashboard
                     </button>
                     <div className="w-full sm:w-auto flex flex-col items-center sm:items-end">
-                        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
-                            Patience Remaining
+                        <div className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-bold tracking-wider border border-emerald-500/30">
+                            LEVEL {level} {getLevelTitle(level)}
                         </div>
                         <div className="flex gap-1.5">
                             {[...Array(selectedPersona?.patience || 6)].map((_, i) => (

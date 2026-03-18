@@ -93,7 +93,10 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({ chapterId, onComplete })
     };
 
     const handleFinishMission = () => {
-        addXP(sessionScore * 100);
+        // Only grant bonus XP if this mission hasn't been completed before
+        if (!completedMissions.includes(chapterId)) {
+            addXP(100);
+        }
         completeMission(chapterId, sessionScore, quiz.length);
 
         // Every 4 missions, show boss unlock reminder

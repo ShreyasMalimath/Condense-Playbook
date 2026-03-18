@@ -17,6 +17,13 @@ export const GamifiedDashboard: React.FC<GamifiedDashboardProps> = ({ onSelectMi
     const progressXP = xp % 500;
     const progressPercent = (progressXP / 500) * 100;
 
+    const getLevelTitle = (lvl: number) => {
+        if (lvl >= 7) return "ARCHITECT";
+        if (lvl >= 5) return "VETERAN";
+        if (lvl >= 3) return "SPECIALIST";
+        return "RECRUIT";
+    };
+
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
             
@@ -46,7 +53,7 @@ export const GamifiedDashboard: React.FC<GamifiedDashboardProps> = ({ onSelectMi
                     <div className="md:col-span-2">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-bold tracking-wider border border-emerald-500/30">
-                                LEVEL {level} RECRUIT
+                                LEVEL {level} {getLevelTitle(level)}
                             </div>
                             <div className={`px-3 py-1 rounded-full text-xs font-bold border ${isFirebaseConfigured ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'}`}>
                                 {isFirebaseConfigured ? 'DATABASE: CLOUD SYNC' : 'DATABASE: LOCAL ONLY'}
