@@ -9,9 +9,11 @@ interface GameState {
     totalQuestions: number;
     unlockedMissionsCount: number;
     missionScores: Record<string, { score: number, total: number }>;
+    chatTranscripts: Record<string, { timestamp: any, messages: { role: string, content: string }[], status: 'won' | 'lost' }>;
 
     addXP: (amount: number) => void;
     completeMission: (chapterId: string, score?: number, total?: number) => void;
+    saveChatTranscript: (personaId: string, messages: { role: string, content: string }[], status: 'won' | 'lost') => void;
     recordAnswer: (isCorrect: boolean) => void;
     resetGame: () => void;
     isFirebaseConfigured: boolean;
@@ -25,6 +27,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
     const [correctAnswers, setCorrectAnswers] = useState(0);
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [missionScores, setMissionScores] = useState<Record<string, { score: number, total: number }>>({});
+    const [chatTranscripts, setChatTranscripts] = useState<Record<string, { timestamp: any, messages: { role: string, content: string }[], status: 'won' | 'lost' }>>({});
     const [isStateLoaded, setIsStateLoaded] = useState(false);
     const [loadedUserId, setLoadedUserId] = useState<string | undefined>(undefined);
     const [isFirebaseConfigured, setIsFirebaseConfigured] = useState(false);
@@ -45,6 +48,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
         setCorrectAnswers(0);
         setTotalQuestions(0);
         setMissionScores({});
+        setChatTranscripts({});
     };
 
     useEffect(() => {
@@ -68,6 +72,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
                     setCorrectAnswers(data.correctAnswers || 0);
                     setTotalQuestions(data.totalQuestions || 0);
                     setMissionScores(data.quizResults || {});
+                    setChatTranscripts(data.chatTranscripts || {});
                 } else {
                     // Fallback to localStorage if Firestore is empty (legacy users)
                     const savedStateStr = localStorage.getItem(`condense_state_${userId}`);
@@ -78,6 +83,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
                         setCorrectAnswers(state.correctAnswers || 0);
                         setTotalQuestions(state.totalQuestions || 0);
                         setMissionScores(state.missionScores || {});
+                        setChatTranscripts(state.chatTranscripts || {});
                     } else {
                         resetGame();
                     }
@@ -94,6 +100,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
                         setCorrectAnswers(state.correctAnswers || 0);
                         setTotalQuestions(state.totalQuestions || 0);
                         setMissionScores(state.missionScores || {});
+                        setChatTranscripts(state.chatTranscripts || {});
                     } catch (e) {
                         console.error("Local storage fallback failed", e);
                     }
@@ -115,7 +122,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
             completedMissions,
             correctAnswers,
             totalQuestions,
-            missionScores
+            missionScores,
+            chatTranscripts
         };
         localStorage.setItem(`condense_state_${userId}`, JSON.stringify(stateToSave));
 
@@ -134,6 +142,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
                     modulesCompleted: completedMissions.length,
                     lastActive: serverTimestamp(),
                     quizResults: missionScores,
+                    chatTranscripts: chatTranscripts,
                 }, { merge: true });
                 console.log("Cloud sync successful for user:", userId);
             } catch (err) {
@@ -143,7 +152,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
         };
 
         syncToFirebase();
-    }, [userId, isStateLoaded, xp, completedMissions, correctAnswers, totalQuestions, missionScores]);
+    }, [userId, isStateLoaded, xp, completedMissions, correctAnswers, totalQuestions, missionScores, chatTranscripts]);
 
     const unlockedMissionsCount = completedMissions.length + 1; // Always unlock next one
 
@@ -164,6 +173,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
             return prev;
         });
     };
+    
+    const saveChatTranscript = (personaId: string, messages: { role: string, content: string }[], status: 'won' | 'lost') => {
+        setChatTranscripts(prev => ({
+            ...prev,
+            [personaId]: {
+                timestamp: new Date().toISOString(),
+                messages,
+                status
+            }
+        }));
+    };
 
     const recordAnswer = (isCorrect: boolean) => {
         setTotalQuestions(prev => prev + 1);
@@ -178,8 +198,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
             totalQuestions,
             unlockedMissionsCount,
             missionScores,
+            chatTranscripts,
             addXP,
             completeMission,
+            saveChatTranscript,
             recordAnswer,
             resetGame,
             isFirebaseConfigured

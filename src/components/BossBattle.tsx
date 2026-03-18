@@ -30,7 +30,7 @@ interface Persona {
 // AI is proxied through /api/chat — no client-side API key needed
 
 export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) => {
-    const { addXP, completeMission } = useGameState();
+    const { addXP, completeMission, saveChatTranscript } = useGameState();
     
     const personas: Record<string, Persona> = {
         developer: {
@@ -207,8 +207,10 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             if (isWin) {
                 setBattleStatus('won');
                 addXP(2000);
+                saveChatTranscript(selectedPersona!.id, [...messages, newUserMessage, newBotMessage].filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })), 'won');
             } else if (turnsLeft - 1 <= 0) {
                 setBattleStatus('lost');
+                saveChatTranscript(selectedPersona!.id, [...messages, newUserMessage, newBotMessage].filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })), 'lost');
             } else {
                 setTurnsLeft(prev => prev - 1);
             }

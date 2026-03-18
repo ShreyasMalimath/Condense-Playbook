@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Trophy, Target, BookOpen, AlertCircle, RefreshCw } from 'lucide-react';
+import { Trophy, Target, BookOpen, AlertCircle, RefreshCw, Bot, Cpu, User } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 
 interface UserData {
     id: string;
@@ -13,6 +14,7 @@ interface UserData {
     modulesCompleted: number;
     lastActive: Date;
     quizResults?: Record<string, unknown>;
+    chatTranscripts?: Record<string, { timestamp: string, messages: { role: string, content: string }[], status: 'won' | 'lost' }>;
 }
 
 export const AdminDashboard: React.FC = () => {
@@ -20,6 +22,7 @@ export const AdminDashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [sortField, setSortField] = useState<'xp' | 'accuracy' | 'modulesCompleted'>('xp');
+    const [expandedUser, setExpandedUser] = useState<string | null>(null);
 
     const fetchUsers = async () => {
         try {
@@ -38,7 +41,8 @@ export const AdminDashboard: React.FC = () => {
                     accuracy: data.accuracy || 0,
                     modulesCompleted: data.modulesCompleted || 0,
                     lastActive: data.lastActive ? data.lastActive.toDate() : new Date(),
-                    quizResults: data.quizResults || {}
+                    quizResults: data.quizResults || {},
+                    chatTranscripts: data.chatTranscripts || {}
                 });
             });
 
@@ -129,6 +133,7 @@ export const AdminDashboard: React.FC = () => {
                                         <th className="p-4 font-semibold text-right">Total XP</th>
                                         <th className="p-4 font-semibold text-center">Accuracy</th>
                                         <th className="p-4 font-semibold text-center">Modules</th>
+                                        <th className="p-4 font-semibold text-center">Chat Logs</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -184,6 +189,15 @@ export const AdminDashboard: React.FC = () => {
                                                         <span className="text-slate-600 text-xs">/ 13</span>
                                                     </div>
                                                 </td>
+                                                <td className="p-4 text-center">
+                                                    <button
+                                                        onClick={() => setExpandedUser(expandedUser === user.id ? null : user.id)}
+                                                        className={`p-2 rounded-lg transition-colors ${expandedUser === user.id ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                                                        title="View Chat History"
+                                                    >
+                                                        <Trophy className="w-4 h-4" />
+                                                    </button>
+                                                </td>
                                             </motion.tr>
                                         ))
                                     )}
@@ -192,6 +206,75 @@ export const AdminDashboard: React.FC = () => {
                         </div>
                     </motion.div>
                 )}
+
+                <AnimatePresence>
+                    {expandedUser && users.find(u => u.id === expandedUser) && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        >
+                            <div className="bg-[#0f172a] border border-slate-700 w-full max-w-4xl max-h-[80vh] rounded-[2rem] overflow-hidden flex flex-col shadow-2xl">
+                                <header className="p-6 border-b border-slate-800 flex justify-between items-center bg-[#1e293b]">
+                                    <div>
+                                        <h2 className="text-xl font-bold flex items-center gap-2">
+                                            Chat History: <span className="text-sky-400">{users.find(u => u.id === expandedUser)?.username}</span>
+                                        </h2>
+                                        <p className="text-slate-400 text-xs uppercase tracking-widest font-bold mt-1">AI Simulation Transcripts</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setExpandedUser(null)}
+                                        className="p-2 hover:bg-slate-700 rounded-full transition-colors"
+                                    >
+                                        <AlertCircle className="w-6 h-6 rotate-45" />
+                                    </button>
+                                </header>
+                                
+                                <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-zinc-950/30">
+                                    {Object.entries(users.find(u => u.id === expandedUser)?.chatTranscripts || {}).length === 0 ? (
+                                        <div className="text-center py-20 text-slate-500">
+                                            <Bot className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                                            <p>No chat transcripts found for this user.</p>
+                                        </div>
+                                    ) : (
+                                        Object.entries(users.find(u => u.id === expandedUser)?.chatTranscripts || {}).map(([personaId, transcript]) => (
+                                            <div key={personaId} className="space-y-4">
+                                                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                                                    <h3 className="font-bold text-white capitalize flex items-center gap-2">
+                                                        <Cpu className="w-4 h-4 text-sky-400" />
+                                                        vs {personaId}
+                                                    </h3>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] text-slate-500 font-mono">{new Date(transcript.timestamp).toLocaleString()}</span>
+                                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${transcript.status === 'won' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-500'}`}>
+                                                            {transcript.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="space-y-4 px-4 border-l-2 border-slate-800 ml-2">
+                                                    {transcript.messages.map((msg, i) => (
+                                                        <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-start' : 'items-end'}`}>
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-500">
+                                                                    {msg.role === 'user' ? 'Rep' : 'Persona'}
+                                                                </span>
+                                                            </div>
+                                                            <div className={`p-3 rounded-xl text-sm max-w-[90%] ${msg.role === 'user' ? 'bg-slate-800 text-slate-200 rounded-tl-none' : 'bg-sky-900/40 text-sky-100 rounded-tr-none border border-sky-500/20'}`}>
+                                                                {msg.content}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
