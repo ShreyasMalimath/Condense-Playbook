@@ -9,7 +9,7 @@ interface XPSummaryPopupProps {
 }
 
 export const XPSummaryPopup: React.FC<XPSummaryPopupProps> = ({ totalXp, maxXp, onClose }) => {
-    const percentage = Math.round((totalXp / maxXp) * 100);
+    const percentage = Math.min(100, Math.round((totalXp / maxXp) * 100));
     
     return (
         <motion.div

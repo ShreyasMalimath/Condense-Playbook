@@ -15,7 +15,7 @@ export const GamifiedDashboard: React.FC<GamifiedDashboardProps> = ({ onSelectMi
 
     const level = Math.floor(xp / 500) + 1;
     const progressXP = xp % 500;
-    const progressPercent = (progressXP / 500) * 100;
+    const progressPercent = Math.min(100, (progressXP / 500) * 100);
 
     const getLevelTitle = (lvl: number) => {
         if (lvl >= 7) return "ARCHITECT";

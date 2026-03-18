@@ -103,7 +103,8 @@ function AppContent({ user, setUser }: { user: UserInfo | null, setUser: (u: Use
     }
   }, [allMissionsCompleted, hasShownXPSummary, user]);
 
-  const totalPossibleXP = mainChapters.length * 500; // 5 questions * 100 XP per chapter
+  const missionsWithQuizzes = fullPlaybookData.filter(c => c.quiz && c.quiz.length > 0).length;
+  const totalPossibleXP = (missionsWithQuizzes * 100) + 2000;
 
 
   const handleLogin = (name: string, company: string, isReturning: boolean) => {
