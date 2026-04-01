@@ -45,8 +45,8 @@ export default async function handler(req: Request): Promise<Response> {
             });
         }
 
-        // Call Gemini REST API directly (stable v1 endpoint - gemini-2.5-flash-lite)
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+        // Call Gemini REST API directly (stable v1 endpoint - gemini-1.5-flash)
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         const geminiRes = await fetch(geminiUrl, {
             method: 'POST',
@@ -59,7 +59,7 @@ export default async function handler(req: Request): Promise<Response> {
                 ],
                 generationConfig: {
                     temperature: 0.85,
-                    maxOutputTokens: 300,
+                    maxOutputTokens: 500,
                 }
             }),
         });

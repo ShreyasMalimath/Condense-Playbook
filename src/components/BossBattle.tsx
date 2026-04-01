@@ -157,9 +157,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             const historyText = messages
                 .filter(m => m.role !== 'system')
                 .map(m => `${m.role === 'model' ? 'Opponent:' : 'Sales Rep:'} ${m.content} `)
-                .join("\n\n");
-
-            const prompt = `
+                .join("\n\n");            const prompt = `
             ${selectedPersona?.systemContext}
             You are talking to a sales rep from a company called "Condense". Condense is a cloud-native streaming data platform built on Rust that replaces Kafka, eliminates Zookeeper, scales infinitely, and uses a BYOC (Bring Your Own Cloud) model inside the customer's VPC.
             
@@ -170,13 +168,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             Your Rules:
             1. Stay in character based on your title: ${selectedPersona?.title}.
             2. You are skeptical and hard to impress. You hate buzzwords.
-            3. If the sales rep uses generic sales talk (e.g. "synergy", "best-in-class"), push back hard.
-            4. If the sales rep brings up specific Condense features like BYOC, Rust, True Serverless, or eliminating Zookeeper, act slightly impressed and ask a deeper question relevant to your role (${selectedPersona?.title}).
-            5. If the sales rep successfully impresses you 3 or more times, end with the EXACT phrase "[[PITCH_SUCCESSFUL]]".
-            6. If you are not impressed, do NOT say the phrase. Be dismissive.
+            3. ETHICS/IRRELEVANCE: If the sales rep sends "hi", "bye", or inappropriate/irrelevant messages, warn them sternly that "This is not ethical or appropriate" and do not answer their query.
+            4. HINTS: If the sales rep is struggling, being too vague, or missing key technical points relevant to your role (e.g. security for a CTO, performance for an engineer), give a subtle technical hint (e.g. "You still haven't addressed my concerns about data residency...").
+            5. CONVICTION: You are convinced ONLY if the sales rep uses technical terms (e.g. BYOC, Rust, Zookeeper, partition-aligned compute, true serverless) that directly address your core concerns.
+            6. THE CLOSING: When convinced, you MUST say exactly "Yes, let's connect on a call" or "Let's book a meeting for further details" and append the token "[[PITCH_SUCCESSFUL]]" at the very end.
+            7. If you are not convinced, do NOT use the closing phrases or the token. Be firm but professional.
 
             Respond in 2-3 short, punchy sentences.
             `;
+;
 
             // Call our secure server-side proxy (api/chat.ts) — API key never leaves the server
             const proxyRes = await fetch('/api/chat', {
