@@ -42,29 +42,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             patience: 6,
             color: 'emerald',
             initialMessage: "I'm reviewing our Kafka consumer logic. We've got massive rebalancing issues and the Java boilerplate is killing us. Why should I care about Condense?",
-            systemContext: "You are Alex Rivera, a cynical Senior Backend Engineer who loves Rust and hates high-latency Java systems. You care about DX (Developer Experience), performance, and safety."
-        },
-        devops: {
-            id: 'devops',
-            name: 'Sarah Jenkins',
-            title: 'Lead SRE',
-            icon: <ShieldAlert className="w-8 h-8" />,
-            traits: ['Stability-focused', 'On-call Warrior', 'Hates Zookeeper', 'Metric-driven'],
-            patience: 5,
-            color: 'cyan',
-            initialMessage: "Our Zookeeper ensemble just shat itself for the third time this week. I'm tired of babysitting clusters. Does Condense actually solve the ops overhead or is it just another wrapper?",
-            systemContext: "You are Sarah Jenkins, a battle-hardened SRE who is tired of Kafka operational complexity. You care about stability, ease of maintenance, and removing single points of failure like Zookeeper."
-        },
-        lead: {
-            id: 'lead',
-            name: 'Michael Chen',
-            title: 'Engineering Lead',
-            icon: <Cpu className="w-8 h-8" />,
-            traits: ['Architecture-focused', 'Scalability-obsessed', 'Team-oriented', 'Risk-averse'],
-            patience: 6,
-            color: 'indigo',
-            initialMessage: "We're planning our next-gen data platform. Kafka is the default, but the microservice sprawl is getting out of hand. How does Condense simplify my architecture?",
-            systemContext: "You are Michael Chen, an Engineering Lead managing multiple teams. You care about architectural simplicity, team velocity, and long-term scalability without microservice sprawl."
+            systemContext: "You are Alex Rivera, a Senior Backend Engineer who loves Rust and hates high-latency Java systems. You care about DX, performance, and safety. You are professional and satisfiable."
         },
         vp: {
             id: 'vp',
@@ -75,7 +53,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             patience: 5,
             color: 'purple',
             initialMessage: "My main concern is hiring. Finding Kafka experts is hard and expensive. Does Condense allow my existing team to build real-time systems without a PhD in distributed systems?",
-            systemContext: "You are Elena Rodriguez, VP of Engineering at a fast-growing startup. You care about team productivity, hiring efficiency, and how fast your team can ship features using real-time data."
+            systemContext: "You are Elena Rodriguez, VP of Engineering. You care about team productivity, hiring efficiency, and velocity. You are professional and satisfiable."
         },
         executive: {
             id: 'executive',
@@ -86,18 +64,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             patience: 4,
             color: 'red',
             initialMessage: "Who is this? My EA said someone from 'Condense' was trying to breach my calendar regarding our Kafka limits. Look, AWS MSK is astronomical. What's the bottom line?",
-            systemContext: "You are David Chen, the highly skeptical CTO of a Fortune 500. You care about TCO, security compliance, BYOC benefits, and absolute reliability."
-        },
-        owner: {
-            id: 'owner',
-            name: 'Marcus Thorne',
-            title: 'Business Owner',
-            icon: <User className="w-8 h-8" />,
-            traits: ['ROI-focused', 'Market-speed driven', 'Customer-obsessed', 'Non-technical'],
-            patience: 5,
-            color: 'amber',
-            initialMessage: "We're losing customers because our dashboard takes 10 minutes to update. My team says they need more 'Kafka brokers'. I just want it to be real-time. Can you fix this?",
-            systemContext: "You are Marcus Thorne, founder of a logistics company. You are not deeply technical but understand the business impact of data latency. You care about ROI, customer satisfaction, and speed to market."
+            systemContext: "You are David Chen, the CTO of a large firm. You care about TCO, security compliance, and BYOC benefits. You are professional and satisfiable."
         }
     };
 
@@ -167,12 +134,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             
             Your Rules:
             1. Stay in character based on your title: ${selectedPersona?.title}.
-            2. You are skeptical and hard to impress. You hate buzzwords.
+            2. Be professional and satisfiable. If the sales rep provides reasonable technical or business answers, acknowledge them.
             3. ETHICS/IRRELEVANCE: If the sales rep sends "hi", "bye", or inappropriate/irrelevant messages, warn them sternly that "This is not ethical or appropriate" and do not answer their query.
-            4. HINTS: If the sales rep is struggling, being too vague, or missing key technical points relevant to your role (e.g. security for a CTO, performance for an engineer), give a subtle technical hint (e.g. "You still haven't addressed my concerns about data residency...").
-            5. CONVICTION: You are convinced ONLY if the sales rep uses technical terms (e.g. BYOC, Rust, Zookeeper, partition-aligned compute, true serverless) that directly address your core concerns.
-            6. THE CLOSING: When convinced, you MUST say exactly "Yes, let's connect on a call" or "Let's book a meeting for further details" and append the token "[[PITCH_SUCCESSFUL]]" at the very end.
-            7. If you are not convinced, do NOT use the closing phrases or the token. Be firm but professional.
+            4. SATISFACTION: You should be convinced if the sales rep addresses your role's core concerns (e.g. performance for an engineer, ROI/Hiring for a VP, TCO/Security for a CTO). Don't be overly skeptical.
+            5. THE CLOSING: When convinced, you MUST say exactly "Yes, let's connect on a call" or "Let's book a meeting for further details" and append the token "[[PITCH_SUCCESSFUL]]" at the very end.
+            6. If the user suggests a meeting or call and you've already found their previous answers reasonable, agree immediately.
 
             Respond in 2-3 short, punchy sentences.
             `;
