@@ -42,7 +42,7 @@ const PERSONAS: Record<string, PersonaDef> = {
         title: 'Senior Backend Engineer',
         icon: <Bot className="w-8 h-8" />,
         traits: ['Pragmatic', 'Technical', 'Rust Enthusiast', 'Loathes Boilerplate'],
-        patience: 6,
+        patience: 7,
         color: 'emerald',
         initialMessage: "I'm reviewing our Kafka consumer logic. We've got massive rebalancing issues and the Java boilerplate is killing us. Why should I care about Condense?",
         keywords: [
@@ -59,9 +59,11 @@ const PERSONAS: Record<string, PersonaDef> = {
             'scale', 'scalable', 'infinite scale', 'developer friendly'
         ],
         stageContext: [
-            "You are skeptical. The sales rep has not yet made a convincing case. Ask one pointed follow-up about how Condense helps with Kafka rebalancing or Java overhead specifically.",
-            "The sales rep has addressed one of your concerns. You are slightly impressed. Ask ONE final question about how this works in production or how easy deployment actually is.",
-            "The sales rep has addressed your core concerns. You are convinced. Close the conversation warmly and agree to a meeting."
+            "Stage 0: Very skeptical. The sales rep has made no case yet. Ask sharply about their Kafka rebalancing problem and why Condense is different.",
+            "Stage 1: One relevant point made. Acknowledge briefly, then push harder on DX — how does it reduce boilerplate day-to-day?",
+            "Stage 2: Two good points. You are starting to listen. Ask about production reliability and zero-downtime deployments.",
+            "Stage 3: Three solid points. You are almost convinced. Ask one final question about connector ecosystem or team onboarding.",
+            "Stage 4: The sales rep has addressed all your concerns thoroughly. You are convinced. Close warmly and agree to a meeting."
         ],
         fallbackResponses: [
             "Interesting. But 'Rust' alone doesn't fix our Zookeeper nightmares. How does Condense actually handle consumer group rebalancing at scale?",
@@ -82,7 +84,7 @@ const PERSONAS: Record<string, PersonaDef> = {
         title: 'VP of Engineering',
         icon: <Trophy className="w-8 h-8" />,
         traits: ['Strategic', 'Velocity-driven', 'Budget-conscious', 'Talent-focused'],
-        patience: 5,
+        patience: 6,
         color: 'purple',
         initialMessage: "My main concern is hiring. Finding Kafka experts is hard and expensive. Does Condense allow my existing team to build real-time systems without a PhD in distributed systems?",
         keywords: [
@@ -100,9 +102,11 @@ const PERSONAS: Record<string, PersonaDef> = {
             'scale', 'scalable', 'unified', 'single platform'
         ],
         stageContext: [
-            "You are skeptical. Push the sales rep to explain how quickly a non-Kafka engineer could build a pipeline, or how Condense reduces your hiring burden.",
-            "Good start. The sales rep has addressed one concern. Ask ONE final question about team scalability, cost, or time to market.",
-            "The sales rep has addressed your core needs. You are convinced. Close warmly and suggest connecting on a call."
+            "Stage 0: Very skeptical. The sales rep hasn't addressed hiring or team velocity yet. Ask how quickly a non-Kafka engineer could build a pipeline from scratch.",
+            "Stage 1: One point noted. Acknowledge it, then ask about actual onboarding time or learning curve for a junior engineer.",
+            "Stage 2: Two points addressed. Ask about TCO — is Condense actually cheaper than their current Confluent or Kafka spend?",
+            "Stage 3: Three solid answers. Ask one final question about scale — does it handle growth without needing ops intervention?",
+            "Stage 4: All concerns addressed. You are convinced. Close warmly and suggest connecting on a call to loop in the engineering leads."
         ],
         fallbackResponses: [
             "That's still vague. My team are product engineers, not Kafka specialists. How long does it actually take to go from zero to a running pipeline with Condense?",
@@ -123,7 +127,7 @@ const PERSONAS: Record<string, PersonaDef> = {
         title: 'CTO',
         icon: <Bot className="w-8 h-8" />,
         traits: ['Skeptical', 'Budget-focused', 'Compliance-obsessed', 'Hates Buzzwords'],
-        patience: 4,
+        patience: 6,
         color: 'red',
         initialMessage: "Who is this? My EA said someone from 'Condense' was trying to breach my calendar regarding our Kafka limits. Look, AWS MSK is astronomical. What's the bottom line?",
         keywords: [
@@ -142,9 +146,11 @@ const PERSONAS: Record<string, PersonaDef> = {
             'scale', 'scalable', 'reliable', 'uptime', 'support'
         ],
         stageContext: [
-            "You are skeptical. The sales rep has not addressed TCO or security yet. Ask sharply — how does Condense's cost compare to what we pay for MSK or Confluent?",
-            "One good point raised. You are slightly interested. Ask ONE final question about data sovereignty, compliance, or SLA.",
-            "The sales rep has addressed your concerns. You are convinced. Close professionally and agree to a call with your security architect."
+            "Stage 0: Very skeptical. You were cold-called. No TCO or security addressed yet. Ask sharply — how much cheaper is Condense vs your current MSK bill?",
+            "Stage 1: One cost-related point raised. Acknowledge it, then ask about data residency — does data leave your cloud, or does it stay in your VPC?",
+            "Stage 2: Two points addressed. Ask about compliance — who handles audits, and do they have SOC2 or enterprise certifications?",
+            "Stage 3: Three good answers. Ask one final question about SLA and support — what happens if it goes down at 2am?",
+            "Stage 4: TCO, data sovereignty, compliance, and support all addressed. You are convinced. Close professionally and agree to a call."
         ],
         fallbackResponses: [
             "Vague. I need numbers. How does Condense's TCO actually compare to AWS MSK at 50TB/month? Give me specifics, not marketing copy.",
@@ -162,18 +168,20 @@ const PERSONAS: Record<string, PersonaDef> = {
 };
 
 // ─── KEYWORD SCORER ────────────────────────────────────────────────────────
+// Awards MAX 1 point per message — so a user must give 4 separate good answers to win
 function scoreMessage(text: string, persona: PersonaDef, usedKeywords: Set<string>): { newScore: number; newUsed: Set<string> } {
     const lower = text.toLowerCase();
-    let newScore = 0;
     const newUsed = new Set(usedKeywords);
+    let hitFound = false;
 
     for (const kw of persona.keywords) {
         if (!newUsed.has(kw) && lower.includes(kw)) {
             newUsed.add(kw);
-            newScore++;
+            hitFound = true;
+            break; // MAX 1 point per message — stop after first hit
         }
     }
-    return { newScore, newUsed };
+    return { newScore: hitFound ? 1 : 0, newUsed };
 }
 
 function isIrrelevant(text: string): boolean {
@@ -222,7 +230,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
     // Scoring state — controlled entirely by our code, not Gemini
     const [score, setScore] = useState(0);
     const [usedKeywords, setUsedKeywords] = useState<Set<string>>(new Set());
-    const SCORE_TO_WIN = 2; // Need 2 unique topic hits to win
+    const SCORE_TO_WIN = 4; // Need 4 separate good answers across 4+ turns to win
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
