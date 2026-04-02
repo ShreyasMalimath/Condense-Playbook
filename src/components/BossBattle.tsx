@@ -46,15 +46,22 @@ const PERSONAS: Record<string, PersonaDef> = {
         color: 'emerald',
         initialMessage: "I'm reviewing our Kafka consumer logic. We've got massive rebalancing issues and the Java boilerplate is killing us. Why should I care about Condense?",
         keywords: [
+            // Core technical terms
             'rust', 'performance', 'boilerplate', 'zookeeper', 'latency', 'pipeline',
-            'dx', 'developer experience', 'deploy', 'rebalancing', 'no ops', 'zero ops',
-            'connector', 'stream', 'memory safe', 'throughput', 'kafka replacement'
+            'rebalancing', 'throughput', 'connector', 'stream', 'kafka',
+            // Natural language equivalents
+            'fast', 'speed', 'efficient', 'simple', 'easy to use', 'easy to build',
+            'no java', 'no overhead', 'less code', 'cleaner', 'simplify',
+            'real-time', 'real time', 'data streaming', 'streaming platform',
+            'replace kafka', 'kafka alternative', 'no zookeeper', 'eliminates zookeeper',
+            'deploy in minutes', 'built on rust', 'cloud native', 'managed',
+            'unified', 'single platform', 'no ops', 'zero ops', 'self managing',
+            'scale', 'scalable', 'infinite scale', 'developer friendly'
         ],
         stageContext: [
-            "You are skeptical. The sales rep has not yet made a convincing case. Ask a pointed follow-up about their Kafka rebalancing or Java overhead.",
-            "The sales rep has mentioned one relevant point. Acknowledge it briefly but push deeper — ask how it actually helps with DX or reduces boilerplate in practice.",
-            "You are warming up. The sales rep has addressed 2 of your concerns. Ask one final question about production reliability or deployment simplicity.",
-            "The sales rep has fully addressed your concerns around performance and DX. You are convinced. Close the conversation warmly."
+            "You are skeptical. The sales rep has not yet made a convincing case. Ask one pointed follow-up about how Condense helps with Kafka rebalancing or Java overhead specifically.",
+            "The sales rep has addressed one of your concerns. You are slightly impressed. Ask ONE final question about how this works in production or how easy deployment actually is.",
+            "The sales rep has addressed your core concerns. You are convinced. Close the conversation warmly and agree to a meeting."
         ],
         fallbackResponses: [
             "Interesting. But 'Rust' alone doesn't fix our Zookeeper nightmares. How does Condense actually handle consumer group rebalancing at scale?",
@@ -79,15 +86,23 @@ const PERSONAS: Record<string, PersonaDef> = {
         color: 'purple',
         initialMessage: "My main concern is hiring. Finding Kafka experts is hard and expensive. Does Condense allow my existing team to build real-time systems without a PhD in distributed systems?",
         keywords: [
-            'hiring', 'team', 'velocity', 'onboarding', 'expertise', 'no kafka expert',
-            'speed', 'productivity', 'time to market', 'gtm', 'ship fast', 'abstraction',
-            'managed', 'fully managed', 'simple', 'no ops', 'byoc', 'cloud', 'cost'
+            // Core terms
+            'hiring', 'team', 'velocity', 'onboarding', 'expertise', 'byoc', 'cost',
+            'managed', 'productivity', 'time to market',
+            // Natural language equivalents
+            'no kafka expert', 'no specialist', 'no expert needed', 'anyone can use',
+            'easy for my team', 'non-kafka', 'existing team', 'no phd',
+            'ship fast', 'launch quickly', 'faster development', 'quick to deploy',
+            'simple to use', 'plug and play', 'out of the box', 'ready to use',
+            'fully managed', 'no ops', 'zero ops', 'cloud native',
+            'saves money', 'reduce cost', 'cheaper', 'affordable', 'lower cost',
+            'data streaming', 'real-time', 'real time', 'streaming platform',
+            'scale', 'scalable', 'unified', 'single platform'
         ],
         stageContext: [
-            "You are skeptical. The sales rep hasn't yet addressed your hiring or team velocity concern meaningfully. Push them on how quickly a non-Kafka engineer could actually build a pipeline.",
-            "The sales rep has made one relevant point about team productivity or reduced expertise needed. Acknowledge it, then ask about real onboarding time or learning curve.",
-            "You're becoming interested. Two concerns addressed. Ask one final question — how does this affect your existing cloud spend or budget?",
-            "The sales rep has addressed your core needs: no Kafka experts required, faster shipping, and cost clarity. You are convinced. Close warmly."
+            "You are skeptical. Push the sales rep to explain how quickly a non-Kafka engineer could build a pipeline, or how Condense reduces your hiring burden.",
+            "Good start. The sales rep has addressed one concern. Ask ONE final question about team scalability, cost, or time to market.",
+            "The sales rep has addressed your core needs. You are convinced. Close warmly and suggest connecting on a call."
         ],
         fallbackResponses: [
             "That's still vague. My team are product engineers, not Kafka specialists. How long does it actually take to go from zero to a running pipeline with Condense?",
@@ -112,16 +127,24 @@ const PERSONAS: Record<string, PersonaDef> = {
         color: 'red',
         initialMessage: "Who is this? My EA said someone from 'Condense' was trying to breach my calendar regarding our Kafka limits. Look, AWS MSK is astronomical. What's the bottom line?",
         keywords: [
-            'tco', 'cost', 'byoc', 'bring your own cloud', 'vpc', 'security',
-            'compliance', 'audit', 'rbac', 'data residency', 'msk', 'confluent',
-            'savings', 'infra', 'cloud bill', 'no lock-in', 'reliability', 'sla',
-            'enterprise', 'governance', 'access control'
+            // Core terms
+            'tco', 'cost', 'byoc', 'vpc', 'security', 'compliance', 'audit',
+            'rbac', 'msk', 'confluent', 'savings', 'reliability', 'sla', 'enterprise',
+            // Natural language equivalents
+            'bring your own cloud', 'your own cloud', 'own infrastructure',
+            'data residency', 'data stays', 'data in our cloud', 'no data leaving',
+            'cheaper than', 'lower cost', 'reduce spend', 'cut costs', 'save money',
+            'no vendor lock', 'no lock-in', 'vendor neutral', 'open',
+            'security', 'secure', 'private', 'compliant', 'access control',
+            'runs in our cloud', 'inside our vpc', 'in our account',
+            'kafka managed', 'managed kafka', 'fully managed',
+            'infra cost', 'cloud bill', 'aws cost', 'gcp cost', 'azure cost',
+            'scale', 'scalable', 'reliable', 'uptime', 'support'
         ],
         stageContext: [
-            "You are very skeptical. This person cold-called you. The sales rep has not yet addressed TCO or security. Challenge them — ask for specific cost numbers vs MSK or Confluent.",
-            "The sales rep has raised one legitimate point about cost or BYOC. Acknowledge it briefly but demand more — ask about data residency and compliance.",
-            "Two concerns addressed. You are slightly interested. Ask one final pointed question about SLA guarantees or enterprise support before you commit.",
-            "The sales rep has addressed TCO, BYOC data residency, and compliance requirements to your satisfaction. You are prepared to engage further."
+            "You are skeptical. The sales rep has not addressed TCO or security yet. Ask sharply — how does Condense's cost compare to what we pay for MSK or Confluent?",
+            "One good point raised. You are slightly interested. Ask ONE final question about data sovereignty, compliance, or SLA.",
+            "The sales rep has addressed your concerns. You are convinced. Close professionally and agree to a call with your security architect."
         ],
         fallbackResponses: [
             "Vague. I need numbers. How does Condense's TCO actually compare to AWS MSK at 50TB/month? Give me specifics, not marketing copy.",
@@ -199,7 +222,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
     // Scoring state — controlled entirely by our code, not Gemini
     const [score, setScore] = useState(0);
     const [usedKeywords, setUsedKeywords] = useState<Set<string>>(new Set());
-    const SCORE_TO_WIN = 3;
+    const SCORE_TO_WIN = 2; // Need 2 unique topic hits to win
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
