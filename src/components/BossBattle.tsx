@@ -33,6 +33,8 @@ interface PersonaDef {
     closingMessage: string;
     // In-character rebukes when user sends irrelevant/nonsense messages
     rebukes: string[];
+    // Dismissal message when patience runs out
+    dismissalMessage: string;
 }
 
 const PERSONAS: Record<string, PersonaDef> = {
@@ -76,7 +78,8 @@ const PERSONAS: Record<string, PersonaDef> = {
             "Excuse me? I asked a very specific technical question and you're giving me this? You're completely off-topic — what nonsense is this? Address the question.",
             "That has nothing to do with what I asked. I'm a backend engineer, not a motivational speaker's audience. Stop deviating from the topic.",
             "I don't know what that means in context of our conversation. This is a technical discussion — please keep it relevant or you're wasting both our time."
-        ]
+        ],
+        dismissalMessage: "Look, this meeting is going in vain and is not helpful. You aren't addressing the real technical problems. Thank you for connecting, but we are not moving forward."
     },
     vp: {
         id: 'vp',
@@ -119,7 +122,8 @@ const PERSONAS: Record<string, PersonaDef> = {
             "I'm sorry — what does that even mean in the context of our conversation? You're completely deviating from the topic. I asked you about my team's velocity, not this.",
             "That's not an answer to what I asked. I have limited time and I need substantive responses, not noise. Please stay on topic.",
             "That's irrelevant to this discussion. If you can't answer the actual question, I'm going to have to end this conversation."
-        ]
+        ],
+        dismissalMessage: "I'll stop you there. This conversation is going in vain and is not helpful for our business goals. Thank you for connecting, but we'll pass."
     },
     executive: {
         id: 'executive',
@@ -163,7 +167,8 @@ const PERSONAS: Record<string, PersonaDef> = {
             "What? You're completely off-topic. I don't have time for nonsense — I have a board meeting in 20 minutes. Ask me something relevant about cost or security, or end this call.",
             "That has nothing to do with the question I asked. This is a C-suite conversation, not a casual chat. You're deviating from the topic entirely.",
             "I'm going to stop you right there. That response makes no sense in this context. If you can't speak to my actual concerns, this meeting is over."
-        ]
+        ],
+        dismissalMessage: "We're done here. This meeting is going in vain and is totally unhelpful. I have a board meeting to prep for. Thank you for connecting, but I'm passing on this."
     }
 };
 
@@ -263,18 +268,33 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
 
         // ── 1. Check for irrelevant/off-topic input ───────────────────────
         if (isIrrelevant(userText)) {
-            // Pick a random in-character rebuke from the persona
-            const rebukeList = selectedPersona.rebukes;
-            const rebuke = rebukeList[Math.floor(Math.random() * rebukeList.length)];
+            const newTurns = turnsLeft - 1;
+            setTurnsLeft(newTurns);
+
+            let rebukeStr = "";
+            if (newTurns <= 0) {
+                rebukeStr = selectedPersona.dismissalMessage;
+                setBattleStatus('lost');
+            } else {
+                const rebukeList = selectedPersona.rebukes;
+                rebukeStr = rebukeList[Math.floor(Math.random() * rebukeList.length)];
+            }
+
             const rebukeMsg: Message = {
                 id: `rebuke-${Date.now()}`,
                 role: 'model',
-                content: rebuke
+                content: rebukeStr
             };
-            setMessages(prev => [...prev, { id: `user-${Date.now()}`, role: 'user', content: userText }, rebukeMsg]);
-            const newTurns = turnsLeft - 1;
-            setTurnsLeft(newTurns);
-            if (newTurns <= 0) setBattleStatus('lost');
+            const allMessages: Message[] = [...messages, { id: `user-${Date.now()}`, role: 'user', content: userText }, rebukeMsg];
+            setMessages(allMessages);
+
+            if (newTurns <= 0) {
+                saveChatTranscript(
+                    selectedPersona.id,
+                    allMessages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
+                    'lost'
+                );
+            }
             return;
         }
 
@@ -390,31 +410,38 @@ Write your in-character response now. 2 sentences max. End with a question.`;
 
 
         try {
-            // ── 5. Call Gemini proxy ───────────────────────────────────────
-            const proxyRes = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt }),
-            });
+            let botText = '';
+            let newTurns = turnsLeft;
 
-            let botText: string;
-            if (!proxyRes.ok) {
-                // Use fallback responses if API is unavailable
-                botText = isWin
-                    ? selectedPersona.closingMessage
-                    : selectedPersona.fallbackResponses[Math.min(stage, selectedPersona.fallbackResponses.length - 2)];
+            if (isWin) {
+                botText = selectedPersona.closingMessage;
+            } else if (turnsLeft === 1) { // It's their last turn and they didn't win
+                botText = selectedPersona.dismissalMessage;
+                newTurns = 0;
             } else {
-                const proxyData = await proxyRes.json() as { text?: string; error?: string };
-                botText = proxyData.text || selectedPersona.fallbackResponses[stage];
-            }
+                newTurns = turnsLeft - 1;
+                // ── 5. Call Gemini proxy ───────────────────────────────────────
+                const proxyRes = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt }),
+                });
 
-            // Strip any [[PITCH_SUCCESSFUL]] Gemini might hallucinate
-            const cleanBotText = botText.replace('[[PITCH_SUCCESSFUL]]', '').trim();
+                if (!proxyRes.ok) {
+                    botText = selectedPersona.fallbackResponses[Math.min(stage, selectedPersona.fallbackResponses.length - 2)];
+                } else {
+                    const proxyData = await proxyRes.json() as { text?: string; error?: string };
+                    botText = proxyData.text || selectedPersona.fallbackResponses[stage];
+                }
+
+                // Strip any [[PITCH_SUCCESSFUL]] Gemini might hallucinate
+                botText = botText.replace('[[PITCH_SUCCESSFUL]]', '').trim();
+            }
 
             const newBotMessage: Message = {
                 id: `bot-${Date.now()}`,
                 role: 'model',
-                content: isWin ? selectedPersona.closingMessage : cleanBotText
+                content: botText
             };
 
             setMessages(prev => [...prev, newBotMessage]);
@@ -432,7 +459,6 @@ Write your in-character response now. 2 sentences max. End with a question.`;
                     'won'
                 );
             } else {
-                const newTurns = turnsLeft - 1;
                 setTurnsLeft(newTurns);
                 if (newTurns <= 0) {
                     setBattleStatus('lost');
@@ -576,48 +602,7 @@ Write your in-character response now. 2 sentences max. End with a question.`;
         );
     }
 
-    // ─── LOSS SCREEN ────────────────────────────────────────────────────────
-    if (battleStatus === 'lost') {
-        return (
-            <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-                <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-zinc-950 border-2 border-red-500/50 p-12 sm:p-20 rounded-[3rem] shadow-[0_0_100px_rgba(239,68,68,0.2)] relative overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-red-500/5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/40 via-transparent to-transparent pointer-events-none" />
-                    <motion.div
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="w-32 h-32 bg-red-500/20 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-[0_0_60px_rgba(239,68,68,0.4)] ring-1 ring-red-500/50"
-                    >
-                        <ShieldAlert className="w-16 h-16" />
-                    </motion.div>
-                    <h2 className="text-4xl sm:text-6xl font-black text-white mb-6 tracking-tight drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]">
-                        PITCH FAILED
-                    </h2>
-                    <p className="text-zinc-300 text-xl font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
-                        {selectedPersona?.name} ran out of patience. You scored <strong className="text-red-400">{score}/{SCORE_TO_WIN}</strong> key points. Address their specific concerns more directly next time.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button
-                            onClick={() => setGamePhase('selecting')}
-                            className="px-8 py-6 bg-zinc-900 text-zinc-400 font-bold rounded-2xl hover:bg-zinc-800 border border-zinc-800 transition-all text-xl uppercase tracking-wider"
-                        >
-                            Change Opponent
-                        </button>
-                        <button
-                            onClick={() => { if (selectedPersona) startBattle(selectedPersona); }}
-                            className="px-12 py-6 bg-red-600/80 text-white font-bold rounded-2xl hover:bg-red-500 transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(239,68,68,0.5)] text-xl uppercase tracking-wider"
-                        >
-                            Retry Challenge
-                        </button>
-                    </div>
-                </motion.div>
-            </div>
-        );
-    }
+    // Loss state is now handled inline beneath the chat header.
 
     // ─── CHAT SCREEN ────────────────────────────────────────────────────────
     const getLevelTitle = (lvl: number) => {
@@ -645,6 +630,12 @@ Write your in-character response now. 2 sentences max. End with a question.`;
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
+                    {battleStatus === 'lost' && (
+                        <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-500 text-sm font-bold tracking-wider border border-red-500/30 flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+                            <ShieldAlert className="w-4 h-4" />
+                            MISSION FAILED
+                        </div>
+                    )}
                     <button
                         onClick={onBack}
                         className="px-4 py-2 bg-zinc-900/50 hover:bg-zinc-800 border border-red-500/30 text-red-500 text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
@@ -721,29 +712,49 @@ Write your in-character response now. 2 sentences max. End with a question.`;
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input */}
+                {/* Input Area / Retry Options */}
                 <div className="p-4 sm:p-6 bg-zinc-900 border-t border-zinc-800">
-                    <form onSubmit={handleSendMessage} className="relative flex items-center">
-                        <input
-                            type="text"
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            disabled={isTyping || battleStatus !== 'playing'}
-                            placeholder="Address their concern with a specific, technical answer..."
-                            className="w-full bg-zinc-950 border border-zinc-700 text-white rounded-2xl pl-6 pr-16 py-4 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-                        />
-                        <button
-                            type="submit"
-                            disabled={!inputValue.trim() || isTyping || battleStatus !== 'playing'}
-                            className="absolute right-3 bg-emerald-500 text-white p-2.5 rounded-xl hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <Send className="w-5 h-5" />
-                        </button>
-                    </form>
-                    <div className="mt-3 flex justify-between items-center text-xs text-zinc-500 px-2 font-medium">
-                        <span>Powered by Gemini AI · Scoring: {score}/{SCORE_TO_WIN} points</span>
-                        <span>{turnsLeft} attempts remaining</span>
-                    </div>
+                    {battleStatus === 'playing' ? (
+                        <>
+                            <form onSubmit={handleSendMessage} className="relative flex items-center">
+                                <input
+                                    type="text"
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    disabled={isTyping}
+                                    placeholder="Address their concern with a specific, technical answer..."
+                                    className="w-full bg-zinc-950 border border-zinc-700 text-white rounded-2xl pl-6 pr-16 py-4 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={!inputValue.trim() || isTyping}
+                                    className="absolute right-3 bg-emerald-500 text-white p-2.5 rounded-xl hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <Send className="w-5 h-5" />
+                                </button>
+                            </form>
+                            <div className="mt-3 flex justify-between items-center text-xs text-zinc-500 px-2 font-medium">
+                                <span>Powered by Gemini AI · Scoring: {score}/{SCORE_TO_WIN} points</span>
+                                <span>{turnsLeft} attempts remaining</span>
+                            </div>
+                        </>
+                    ) : battleStatus === 'lost' ? (
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <p className="text-red-400 font-bold mb-2 sm:mb-0 sm:mr-auto">Mission Failed. Review the chat above to see where you went wrong.</p>
+                            <button
+                                onClick={() => setGamePhase('selecting')}
+                                className="px-6 py-3 bg-zinc-950 text-zinc-400 font-bold rounded-xl hover:bg-zinc-800 border border-zinc-800 transition-all text-sm uppercase tracking-wider"
+                            >
+                                Change Opponent
+                            </button>
+                            <button
+                                onClick={() => { if (selectedPersona) startBattle(selectedPersona); }}
+                                className="px-6 py-3 bg-red-600/80 text-white font-bold rounded-xl hover:bg-red-500 transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(239,68,68,0.5)] text-sm uppercase tracking-wider flex items-center gap-2"
+                            >
+                                <ArrowLeft className="w-4 h-4" /> Try Again
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
             </motion.div>
         </div>
