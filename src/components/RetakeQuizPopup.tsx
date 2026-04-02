@@ -48,27 +48,33 @@ export const RetakeQuizPopup: React.FC<RetakeQuizPopupProps> = ({
                         {missionTitle}
                     </p>
                     
-                    <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 mb-8">
-                        <span className="text-zinc-500 text-xs font-bold uppercase tracking-widest block mb-1">Your Best Performance</span>
-                        <div className="flex items-center justify-center gap-3">
-                            <Award className="w-5 h-5 text-emerald-500" />
-                            <span className="text-3xl font-black text-white">{previousScore} / {totalQuestions}</span>
+                    {totalQuestions > 0 && (
+                        <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 mb-8">
+                            <span className="text-zinc-500 text-xs font-bold uppercase tracking-widest block mb-1">Your Best Performance</span>
+                            <div className="flex items-center justify-center gap-3">
+                                <Award className="w-5 h-5 text-emerald-500" />
+                                <span className="text-3xl font-black text-white">{previousScore} / {totalQuestions}</span>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <button
-                            onClick={onClose}
-                            className="py-4 bg-zinc-900 text-zinc-300 font-bold rounded-xl hover:bg-zinc-800 transition-all border border-zinc-800"
-                        >
-                            Cancel
-                        </button>
+                    <div className={totalQuestions > 0 ? "grid grid-cols-2 gap-4" : "flex flex-col gap-4"}>
                         <button
                             onClick={onStart}
-                            className="py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 group"
+                            className="py-4 px-6 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 group w-full"
                         >
-                            Start Quiz
-                            <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            {totalQuestions > 0 ? "Start Quiz" : "Replay Mission"}
+                            {totalQuestions > 0 ? (
+                                <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            ) : (
+                                <RotateCcw className="w-5 h-5 group-hover:-rotate-90 transition-transform" />
+                            )}
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="py-4 px-6 bg-zinc-900 text-zinc-300 font-bold rounded-xl hover:bg-zinc-800 transition-all border border-zinc-800 w-full"
+                        >
+                            Cancel
                         </button>
                     </div>
                 </div>
