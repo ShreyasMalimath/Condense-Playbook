@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGameState } from './GameStateContext';
 import { Trophy, ShieldAlert, Cpu, Send, Bot, User, Loader2, ArrowLeft } from 'lucide-react';
+import { getKnowledgeForPersona } from '../data/playbook_knowledge';
 
 interface BossBattleProps {
     onComplete: () => void;
@@ -302,10 +303,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
         setMessages(prev => [...prev, newUserMessage]);
         setIsTyping(true);
 
-        // ── 2. NEW SEMANTIC EVALUATION ──────────────────────────────────
+        // ── 2. NEW SEMANTIC EVALUATION (grounded in real playbook) ──────
         let isPass = false;
         try {
             const currentStageContext = selectedPersona.stageContext[Math.min(score, SCORE_TO_WIN)];
+            const playbookContext = getKnowledgeForPersona(selectedPersona.id, score);
             const evalRes = await fetch('/api/evaluate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -313,6 +315,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
                     userText,
                     stageContext: currentStageContext,
                     personaName: selectedPersona.name,
+                    playbookContext,
                 }),
             });
             const evalData = await evalRes.json();
@@ -375,6 +378,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
         };
 
         const fewShotExample = fewShotByStage[selectedPersona.id] || '';
+        const playbookContext = getKnowledgeForPersona(selectedPersona.id, stage);
 
         const prompt = isWin
             ? `## IDENTITY
@@ -392,15 +396,6 @@ Do not add any preamble, do not modify the sentence, do not add any follow-up.`
             : `## IDENTITY
 You are ${selectedPersona.name}, ${selectedPersona.title}. Traits: ${selectedPersona.traits.join(', ')}.
 
-## PRODUCT FACTS (grounded truth — do not invent anything outside this)
-Condense is a cloud-native data streaming platform built on Rust.
-- Replaces Apache Kafka entirely
-- Eliminates Zookeeper (no ensemble, no ops overhead)
-- Infinite auto-scaling with no manual partition tuning
-- BYOC model: deploys inside the customer's own VPC — data never leaves their cloud
-- Developers define pipelines in code; deploy in minutes with no Kafka expertise required
-- Cost model: infrastructure-only, no per-message fees like Confluent
-
 ## CONVERSATION STATE
 - Current stage: ${stage} of ${SCORE_TO_WIN} (${stage === 0 ? 'not convinced yet' : stage < SCORE_TO_WIN - 1 ? 'slightly interested' : 'almost convinced — one more good answer needed'})
 - Points scored so far: ${score}/${SCORE_TO_WIN}
@@ -412,18 +407,18 @@ Sales Rep: ${userText}
 ## STAGE INSTRUCTION
 ${stageInstruction}
 
+## FEW-SHOT EXAMPLE (use this as your tone and format reference)
+${fewShotExample}
+
 ## RULES
 1. MUST stay in character as ${selectedPersona.name} at all times.
 2. MUST ask exactly ONE follow-up question at the end. Never ask more than one.
 3. MUST keep your response to 2 sentences maximum.
 4. NEVER agree to book a meeting or say "let's connect" — that is FORBIDDEN before stage ${SCORE_TO_WIN}.
 5. NEVER say "great point", "that's interesting", "I like that" or give generic praise.
-6. NEVER invent product features not listed in PRODUCT FACTS above.
+6. NEVER invent product features not listed in the knowledge base provided in the system prompt.
 7. ALWAYS be skeptical but professional — push for specifics, not vague claims.
 8. If the sales rep is still vague, push harder for a concrete answer.
-
-## FEW-SHOT EXAMPLE (use this as your tone and format reference)
-${fewShotExample}
 
 ## YOUR RESPONSE
 Write your in-character response now. 2 sentences max. End with a question.`;
@@ -441,11 +436,11 @@ Write your in-character response now. 2 sentences max. End with a question.`;
                 newTurns = 0;
             } else {
                 newTurns = turnsLeft - 1;
-                // ── 5. Stream Gemini API Output ───────────────────────────────────────
+                // ── 5. Stream Gemini API Output (with grounded playbook context) ──────
                 const proxyRes = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt }),
+                    body: JSON.stringify({ prompt, playbookContext }),
                 });
 
                 if (!proxyRes.ok || !proxyRes.body) {

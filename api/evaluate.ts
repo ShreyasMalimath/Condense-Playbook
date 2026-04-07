@@ -23,28 +23,32 @@ export default async function handler(req: Request): Promise<Response> {
             userText: string;
             stageContext: string;
             personaName: string;
+            playbookContext?: string;
         };
 
-        const { userText, stageContext, personaName } = body;
+        const { userText, stageContext, personaName, playbookContext } = body;
+
+        const knowledgeBlock = playbookContext
+            ? `\n\n## VERIFIED CONDENSE PRODUCT KNOWLEDGE (only use facts from this section):\n${playbookContext}`
+            : '';
 
         const evaluatePrompt = `
 You are an expert sales manager AI evaluating a sales rep's pitch.
 The sales rep is talking to: ${personaName}.
-The current concern they must address is described here:
-"${stageContext}"
+The current concern they must address is: "${stageContext}"${knowledgeBlock}
 
-The sales rep said:
-"${userText}"
+The sales rep said: "${userText}"
 
-Evaluate if the sales rep successfully, logically, and accurately addressed the core concern without hallucinating features outside of the Condense playbook.
-- If it is completely off-topic or a low-effort reply, return success: false.
-- If it just mentions a keyword but makes no logical sense, return success: false.
-- If it correctly addresses the technical or business concern, return success: true.
+Evaluate if the sales rep successfully, logically, and accurately addressed the core concern.
+- If the answer is completely off-topic, return success: false.
+- If it uses a keyword but makes no logical sense in context, return success: false.
+- If it correctly and persuasively addresses the concern using accurate product knowledge, return success: true.
+- Only accept claims that align with the verified knowledge above. Do not reward hallucinated features.
 
-Output EXACTLY AND ONLY valid JSON in this format:
+Output EXACTLY AND ONLY valid JSON:
 {
   "success": boolean,
-  "reasoning": "A 1-sentence explanation of why it passed or failed"
+  "reasoning": "One sentence explaining why it passed or failed"
 }
 `;
 

@@ -25,8 +25,8 @@ export default async function handler(req: Request) {
     }
 
     try {
-        const body = await req.json() as { prompt: string };
-        const { prompt } = body;
+        const body = await req.json() as { prompt: string; playbookContext?: string };
+        const { prompt, playbookContext } = body;
 
         if (!prompt) {
             return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -35,8 +35,13 @@ export default async function handler(req: Request) {
             });
         }
 
+        const systemPrompt = playbookContext
+            ? `You are an expert sales persona in a B2B sales simulation. Your knowledge of the Condense platform is grounded EXCLUSIVELY in the following verified playbook material. Do NOT invent facts beyond what is listed here.\n\n${playbookContext}`
+            : undefined;
+
         const result = streamText({
             model: googleAI('gemini-2.5-flash-lite'),
+            system: systemPrompt,
             prompt,
             temperature: 0.85,
         });
