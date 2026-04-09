@@ -28,23 +28,27 @@ export default async function handler(req: Request): Promise<Response> {
         const { userText, stageContext, personaName } = body;
 
         const evaluatePrompt = `
-You are an expert sales manager AI evaluating a sales rep's pitch.
-The sales rep is talking to: ${personaName}.
-The current concern they must address is described here:
+You are a helpful sales coach AI evaluating a sales trainee's pitch response.
+The trainee is talking to: ${personaName}.
+The concern they need to address:
 "${stageContext}"
 
-The sales rep said:
+The trainee said:
 "${userText}"
 
-Evaluate if the sales rep successfully, logically, and accurately addressed the core concern without hallucinating features outside of the Condense playbook.
-- If it is completely off-topic or a low-effort reply, return success: false.
-- If it just mentions a keyword but makes no logical sense, return success: false.
-- If it correctly addresses the technical or business concern, return success: true.
+Carefully evaluate how well the trainee addressed the concern. Be encouraging and fair.
 
-Output EXACTLY AND ONLY valid JSON in this format:
+Scoring rules:
+- "pass"   : The trainee fully and correctly addressed the concern with a logical, relevant answer.
+- "near"   : The trainee is 80-90% correct — they got the core idea but missed 1-2 specific key points or used slightly wrong terms. Provide a hint with the missing part.
+- "partial": The trainee gave a relevant but incomplete or vague answer that needs more depth. Provide a guiding question to help them expand.
+- "fail"   : The answer is completely off-topic, irrelevant, too short, or makes no sense.
+
+Output EXACTLY AND ONLY valid JSON in this format (no extra text):
 {
-  "success": boolean,
-  "reasoning": "A 1-sentence explanation of why it passed or failed"
+  "result": "pass" | "near" | "partial" | "fail",
+  "reasoning": "A 1-sentence coach-friendly explanation.",
+  "hint": "(Only for near/partial) A short, kind hint or guiding question to help the trainee. Empty string for pass/fail."
 }
 `;
 
@@ -77,9 +81,13 @@ Output EXACTLY AND ONLY valid JSON in this format:
 
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         
-        let result = { success: false, reasoning: 'Failed to parse evaluation.' };
+        let result: { result: string; reasoning: string; hint: string } = { result: 'fail', reasoning: 'Failed to parse evaluation.', hint: '' };
         try {
             result = JSON.parse(text);
+            // Backwards compat: if old format with 'success' boolean
+            if (typeof (result as any).success === 'boolean') {
+                result.result = (result as any).success ? 'pass' : 'fail';
+            }
         } catch (e) {
             console.error('Eval parse error:', text);
         }

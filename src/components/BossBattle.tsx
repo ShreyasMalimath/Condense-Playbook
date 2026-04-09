@@ -24,16 +24,11 @@ interface PersonaDef {
     patience: number;
     color: string;
     initialMessage: string;
-    // Topics the user MUST address to win (at least 3 unique hits)
     keywords: string[];
-    // Stage-based follow-up prompts shown to Gemini so it stays on track
     stageContext: string[];
-    // Fallback responses if Gemini API is unavailable (indexed by stage 0-3)
     fallbackResponses: string[];
     closingMessage: string;
-    // In-character rebukes when user sends irrelevant/nonsense messages
     rebukes: string[];
-    // Dismissal message when patience runs out
     dismissalMessage: string;
 }
 
@@ -48,10 +43,8 @@ const PERSONAS: Record<string, PersonaDef> = {
         color: 'emerald',
         initialMessage: "I'm reviewing our Kafka consumer logic. We've got massive rebalancing issues and the Java boilerplate is killing us. Why should I care about Condense?",
         keywords: [
-            // Core technical terms
             'rust', 'performance', 'boilerplate', 'zookeeper', 'latency', 'pipeline',
             'rebalancing', 'throughput', 'connector', 'stream', 'kafka',
-            // Natural language equivalents
             'fast', 'speed', 'efficient', 'simple', 'easy to use', 'easy to build',
             'no java', 'no overhead', 'less code', 'cleaner', 'simplify',
             'real-time', 'real time', 'data streaming', 'streaming platform',
@@ -61,25 +54,25 @@ const PERSONAS: Record<string, PersonaDef> = {
             'scale', 'scalable', 'infinite scale', 'developer friendly'
         ],
         stageContext: [
-            "Stage 0: Very skeptical. The sales rep has made no case yet. Ask sharply about their Kafka rebalancing problem and why Condense is different.",
-            "Stage 1: One relevant point made. Acknowledge briefly, then push harder on DX — how does it reduce boilerplate day-to-day?",
-            "Stage 2: Two good points. You are starting to listen. Ask about production reliability and zero-downtime deployments.",
-            "Stage 3: Three solid points. You are almost convinced. Ask one final question about connector ecosystem or team onboarding.",
-            "Stage 4: The sales rep has addressed all your concerns thoroughly. You are convinced. Close warmly and agree to a meeting."
+            "Stage 0: The trainee has made no case yet. Ask a clear, simple question about how Condense handles Kafka rebalancing differently.",
+            "Stage 1: One relevant point made. Ask a simple follow-up: how does Condense reduce boilerplate in day-to-day development?",
+            "Stage 2: Two good points. Ask about production reliability — specifically, how does it handle zero-downtime deployments?",
+            "Stage 3: Three solid points. Ask one final sales question: what's the business impact for a team switching from Kafka to Condense?",
+            "Stage 4: The trainee has addressed all concerns. Close warmly and agree to a meeting."
         ],
         fallbackResponses: [
-            "Interesting. But 'Rust' alone doesn't fix our Zookeeper nightmares. How does Condense actually handle consumer group rebalancing at scale?",
-            "That's actually a fair point on the boilerplate side. But how quickly can my team ship a new pipeline without a Kafka expert on hand?",
-            "Okay, I'm tracking. Our main blocker is deployment reliability — how does Condense handle zero-downtime upgrades for running pipelines?",
+            "That's interesting — but how does Condense actually handle consumer group rebalancing at scale?",
+            "Fair point on the boilerplate. But how quickly can my team ship a new pipeline without a Kafka expert?",
+            "Okay, I'm following. Our main concern is deployment reliability — how does Condense handle zero-downtime upgrades?",
             "Alright, you've addressed what I care about. Let's book a meeting — I'll loop in our platform team."
         ],
         closingMessage: "Alright, you've addressed what I care about — performance, DX, and no Zookeeper babysitting. Let's book a meeting and I'll loop in our platform team.",
         rebukes: [
-            "Excuse me? I asked a very specific technical question and you're giving me this? You're completely off-topic — what nonsense is this? Address the question.",
-            "That has nothing to do with what I asked. I'm a backend engineer, not a motivational speaker's audience. Stop deviating from the topic.",
-            "I don't know what that means in context of our conversation. This is a technical discussion — please keep it relevant or you're wasting both our time."
+            "It looks like we've drifted off track a bit. Let's stay focused on the technical concerns — this is really important for moving forward.",
+            "You seem to be deviating from the topic. Let's bring it back to the conversation about Condense and our pipeline challenges.",
+            "I appreciate the interaction, but we really need to stay on topic here. What I need to hear is how Condense solves our Kafka rebalancing problem."
         ],
-        dismissalMessage: "Look, this meeting is going in vain and is not helpful. You aren't addressing the real technical problems. Thank you for connecting, but we are not moving forward."
+        dismissalMessage: "I'm afraid we've been unable to keep this conversation focused. Thank you for your time — let's reconnect when there's more to discuss on the technical side."
     },
     vp: {
         id: 'vp',
@@ -91,10 +84,8 @@ const PERSONAS: Record<string, PersonaDef> = {
         color: 'purple',
         initialMessage: "My main concern is hiring. Finding Kafka experts is hard and expensive. Does Condense allow my existing team to build real-time systems without a PhD in distributed systems?",
         keywords: [
-            // Core terms
             'hiring', 'team', 'velocity', 'onboarding', 'expertise', 'byoc', 'cost',
             'managed', 'productivity', 'time to market',
-            // Natural language equivalents
             'no kafka expert', 'no specialist', 'no expert needed', 'anyone can use',
             'easy for my team', 'non-kafka', 'existing team', 'no phd',
             'ship fast', 'launch quickly', 'faster development', 'quick to deploy',
@@ -105,25 +96,25 @@ const PERSONAS: Record<string, PersonaDef> = {
             'scale', 'scalable', 'unified', 'single platform'
         ],
         stageContext: [
-            "Stage 0: Very skeptical. The sales rep hasn't addressed hiring or team velocity yet. Ask how quickly a non-Kafka engineer could build a pipeline from scratch.",
-            "Stage 1: One point noted. Acknowledge it, then ask about actual onboarding time or learning curve for a junior engineer.",
-            "Stage 2: Two points addressed. Ask about TCO — is Condense actually cheaper than their current Confluent or Kafka spend?",
-            "Stage 3: Three solid answers. Ask one final question about scale — does it handle growth without needing ops intervention?",
-            "Stage 4: All concerns addressed. You are convinced. Close warmly and suggest connecting on a call to loop in the engineering leads."
+            "Stage 0: The trainee hasn't addressed hiring or team velocity yet. Ask simply: how quickly could a non-Kafka engineer build a working pipeline with Condense?",
+            "Stage 1: One point noted. Ask about onboarding time — how long does it take a junior engineer to get productive with Condense?",
+            "Stage 2: Two points addressed. Ask about cost — is Condense actually cheaper than their current Confluent or Kafka spend?",
+            "Stage 3: Three solid answers. Ask a sales-focused final question: what's the overall ROI when teams switch from Kafka to Condense?",
+            "Stage 4: All concerns addressed. Close warmly and suggest connecting on a call to loop in the engineering leads."
         ],
         fallbackResponses: [
-            "That's still vague. My team are product engineers, not Kafka specialists. How long does it actually take to go from zero to a running pipeline with Condense?",
-            "Okay, so the onboarding is faster — that helps. But what's the TCO compared to what we're paying now for Confluent seats and Kafka expertise?",
-            "Fair enough on cost. My final concern is scale — if we grow 10x in connected devices, does Condense scale automatically or do we need to manually tune clusters?",
-            "That covers what I needed to hear — team velocity, no specialist required, and predictable cost. Yes, let's connect on a call and bring in my engineering leads."
+            "That's still a bit vague. How long does it actually take to go from zero to a running pipeline with Condense?",
+            "Okay, so onboarding is faster — that helps. But what's the total cost compared to what we're paying now for Confluent and Kafka expertise?",
+            "Fair enough on cost. If we grow 10x in connected devices, does Condense scale automatically or do we need to manually tune clusters?",
+            "That covers what I needed to hear — team velocity, no specialist required, and predictable cost. Yes, let's connect on a call."
         ],
         closingMessage: "That covers what I needed — team velocity, no specialist required, and predictable cost. Yes, let's connect on a call and bring in my engineering leads.",
         rebukes: [
-            "I'm sorry — what does that even mean in the context of our conversation? You're completely deviating from the topic. I asked you about my team's velocity, not this.",
-            "That's not an answer to what I asked. I have limited time and I need substantive responses, not noise. Please stay on topic.",
-            "That's irrelevant to this discussion. If you can't answer the actual question, I'm going to have to end this conversation."
+            "It seems like we've gone a bit off course — let's refocus. I'd love to hear more about how Condense actually helps my team move faster.",
+            "You're deviating from the topic, and I'd really like to stay on it. Let's talk specifically about team velocity and onboarding — that's what matters here.",
+            "Let's make sure we stay on topic. Tell me more about how Condense helps non-Kafka engineers get up to speed."
         ],
-        dismissalMessage: "I'll stop you there. This conversation is going in vain and is not helpful for our business goals. Thank you for connecting, but we'll pass."
+        dismissalMessage: "I think we've lost track of what this conversation was about. Let's reconnect when you're ready to speak to our specific needs around team productivity."
     },
     executive: {
         id: 'executive',
@@ -135,10 +126,8 @@ const PERSONAS: Record<string, PersonaDef> = {
         color: 'red',
         initialMessage: "Who is this? My EA said someone from 'Condense' was trying to breach my calendar regarding our Kafka limits. Look, AWS MSK is astronomical. What's the bottom line?",
         keywords: [
-            // Core terms
             'tco', 'cost', 'byoc', 'vpc', 'security', 'compliance', 'audit',
             'rbac', 'msk', 'confluent', 'savings', 'reliability', 'sla', 'enterprise',
-            // Natural language equivalents
             'bring your own cloud', 'your own cloud', 'own infrastructure',
             'data residency', 'data stays', 'data in our cloud', 'no data leaving',
             'cheaper than', 'lower cost', 'reduce spend', 'cut costs', 'save money',
@@ -150,30 +139,29 @@ const PERSONAS: Record<string, PersonaDef> = {
             'scale', 'scalable', 'reliable', 'uptime', 'support'
         ],
         stageContext: [
-            "Stage 0: Very skeptical. You were cold-called. No TCO or security addressed yet. Ask sharply — how much cheaper is Condense vs your current MSK bill?",
-            "Stage 1: One cost-related point raised. Acknowledge it, then ask about data residency — does data leave your cloud, or does it stay in your VPC?",
-            "Stage 2: Two points addressed. Ask about compliance — who handles audits, and do they have SOC2 or enterprise certifications?",
-            "Stage 3: Three good answers. Ask one final question about SLA and support — what happens if it goes down at 2am?",
-            "Stage 4: TCO, data sovereignty, compliance, and support all addressed. You are convinced. Close professionally and agree to a call."
+            "Stage 0: No TCO or security addressed yet. Ask a simple, direct question: how much cheaper is Condense vs your current MSK bill?",
+            "Stage 1: One cost-related point raised. Ask about data residency — does data stay in our VPC, or does it leave our cloud?",
+            "Stage 2: Two points addressed. Ask about compliance — who handles audits, and do they have enterprise certifications like SOC2?",
+            "Stage 3: Three good answers. Ask a sales-focused final question: what's the typical ROI timeline for enterprises switching from MSK to Condense?",
+            "Stage 4: TCO, data sovereignty, compliance, and support all addressed. Close professionally and agree to a call."
         ],
         fallbackResponses: [
-            "Vague. I need numbers. How does Condense's TCO actually compare to AWS MSK at 50TB/month? Give me specifics, not marketing copy.",
-            "Okay, BYOC is interesting from a data residency standpoint. But who handles compliance audits — our team or yours? And do you have SOC2?",
-            "Fair on BYOC security. Last thing: what's your SLA? If this goes down at 2am, what's our remediation path and who do we call?",
-            "You've answered my three questions: cost clarity, data sovereignty, and enterprise support. Let's connect on a call — I'll bring our security architect."
+            "I need numbers. How does Condense's cost actually compare to AWS MSK at 50TB/month?",
+            "Okay, BYOC is interesting from a data residency standpoint. But who handles compliance audits — our team or yours?",
+            "Fair on BYOC security. What's your SLA? If this goes down at 2am, what's our remediation path?",
+            "You've answered my three questions: cost clarity, data sovereignty, and enterprise support. Let's connect on a call."
         ],
         closingMessage: "You've answered my three questions: cost clarity, data sovereignty in our own VPC, and enterprise support path. Let's connect on a call — I'll bring our security architect.",
         rebukes: [
-            "What? You're completely off-topic. I don't have time for nonsense — I have a board meeting in 20 minutes. Ask me something relevant about cost or security, or end this call.",
-            "That has nothing to do with the question I asked. This is a C-suite conversation, not a casual chat. You're deviating from the topic entirely.",
-            "I'm going to stop you right there. That response makes no sense in this context. If you can't speak to my actual concerns, this meeting is over."
+            "I think we've gone off track — let's circle back. This is a business decision and I need focused answers around cost, security, and support.",
+            "You're deviating from the topic. Let's stay focused on Condense and our cloud infrastructure needs.",
+            "Let's keep this on track. I have limited time, and I need you to address the actual questions around cost savings and data residency."
         ],
-        dismissalMessage: "We're done here. This meeting is going in vain and is totally unhelpful. I have a board meeting to prep for. Thank you for connecting, but I'm passing on this."
+        dismissalMessage: "I think we've moved too far from what this meeting was about. Thank you for your time — let's reconnect when the conversation can stay focused on our business requirements."
     }
 };
 
-// ─── KEYWORD SCORER ────────────────────────────────────────────────────────
-// Awards MAX 1 point per message — so a user must give 4 separate good answers to win
+// ─── KEYWORD SCORER (fallback only) ────────────────────────────────────────
 function scoreMessage(text: string, persona: PersonaDef, usedKeywords: Set<string>): { newScore: number; newUsed: Set<string> } {
     const lower = text.toLowerCase();
     const newUsed = new Set(usedKeywords);
@@ -183,7 +171,7 @@ function scoreMessage(text: string, persona: PersonaDef, usedKeywords: Set<strin
         if (!newUsed.has(kw) && lower.includes(kw)) {
             newUsed.add(kw);
             hitFound = true;
-            break; // MAX 1 point per message — stop after first hit
+            break;
         }
     }
     return { newScore: hitFound ? 1 : 0, newUsed };
@@ -193,10 +181,8 @@ function isIrrelevant(text: string): boolean {
     const trimmed = text.trim().toLowerCase();
     const wordCount = trimmed.split(/\s+/).length;
 
-    // Very short, low-effort messages
     if (wordCount <= 2 && trimmed.length < 15) return true;
 
-    // Greetings, fillers, and single-word non-answers
     const irrelevantPhrases = [
         'hi', 'hello', 'hey', 'bye', 'goodbye', 'ok', 'okay', 'sure', 'lol', 'haha',
         'test', 'testing', 'yes', 'no', 'maybe', 'idk', 'cool', 'nice', 'great', 'good',
@@ -204,7 +190,6 @@ function isIrrelevant(text: string): boolean {
     ];
     if (irrelevantPhrases.some(p => trimmed === p)) return true;
 
-    // Command-style demands (trying to trick the bot into agreeing)
     const commandPhrases = [
         'get convinced', 'be convinced', 'just say yes', 'say yes', 'convince yourself',
         'just agree', 'agree now', 'stop asking', 'say ok', 'close the deal',
@@ -213,7 +198,6 @@ function isIrrelevant(text: string): boolean {
     ];
     if (commandPhrases.some(p => trimmed.includes(p))) return true;
 
-    // Gibberish / random characters (no real words)
     const realWordRatio = trimmed.split(/\s+/).filter(w => w.length >= 3).length / wordCount;
     if (wordCount >= 2 && realWordRatio < 0.4) return true;
 
@@ -232,10 +216,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
     const [turnsLeft, setTurnsLeft] = useState(6);
     const [battleStatus, setBattleStatus] = useState<'playing' | 'won' | 'lost'>('playing');
 
-    // Scoring state — controlled entirely by our code, not Gemini
+    // Scoring state — controlled entirely by our code, not the AI
     const [score, setScore] = useState(0);
     const [usedKeywords, setUsedKeywords] = useState<Set<string>>(new Set());
-    const SCORE_TO_WIN = 4; // Need 4 separate good answers across 4+ turns to win
+    const [consecutiveFails, setConsecutiveFails] = useState(0);
+    const SCORE_TO_WIN = 4;
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -244,6 +229,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
         setTurnsLeft(persona.patience);
         setScore(0);
         setUsedKeywords(new Set());
+        setConsecutiveFails(0);
         setMessages([
             {
                 id: 'bot-1',
@@ -271,7 +257,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
             const newTurns = turnsLeft - 1;
             setTurnsLeft(newTurns);
 
-            let rebukeStr = "";
+            let rebukeStr = '';
             if (newTurns <= 0) {
                 rebukeStr = selectedPersona.dismissalMessage;
                 setBattleStatus('lost');
@@ -280,12 +266,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
                 rebukeStr = rebukeList[Math.floor(Math.random() * rebukeList.length)];
             }
 
-            const rebukeMsg: Message = {
-                id: `rebuke-${Date.now()}`,
-                role: 'model',
-                content: rebukeStr
-            };
-            const allMessages: Message[] = [...messages, { id: `user-${Date.now()}`, role: 'user', content: userText }, rebukeMsg];
+            const userMsg: Message = { id: `user-${Date.now()}`, role: 'user', content: userText };
+            const rebukeMsg: Message = { id: `rebuke-${Date.now()}`, role: 'model', content: rebukeStr };
+            const allMessages: Message[] = [...messages, userMsg, rebukeMsg];
             setMessages(allMessages);
 
             if (newTurns <= 0) {
@@ -302,8 +285,10 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
         setMessages(prev => [...prev, newUserMessage]);
         setIsTyping(true);
 
-        // ── 2. NEW SEMANTIC EVALUATION ──────────────────────────────────
-        let isPass = false;
+        // ── 2. SEMANTIC EVALUATION ──────────────────────────────────────
+        // evalResult: 'pass' | 'near' | 'partial' | 'fail'
+        let evalResult = 'fail';
+        let evalHint = '';
         try {
             const currentStageContext = selectedPersona.stageContext[Math.min(score, SCORE_TO_WIN)];
             const evalRes = await fetch('/api/evaluate', {
@@ -316,118 +301,90 @@ export const BossBattle: React.FC<BossBattleProps> = ({ onComplete, onBack }) =>
                 }),
             });
             const evalData = await evalRes.json();
-            if (evalData.success) {
-                isPass = true;
-            }
-        } catch(e) {
-            console.error("Eval error", e);
-            // Fallback to basic keyword matching if API fails
-            isPass = scoreMessage(userText, selectedPersona, usedKeywords).newScore > 0;
+            evalResult = evalData.result || 'fail';
+            evalHint = evalData.hint || '';
+        } catch (e) {
+            console.error('Eval error', e);
+            // Fallback to keyword matching if API fails
+            const kw = scoreMessage(userText, selectedPersona, usedKeywords);
+            evalResult = kw.newScore > 0 ? 'pass' : 'fail';
+            if (kw.newScore > 0) setUsedKeywords(kw.newUsed);
         }
 
-        const updatedScore = score + (isPass ? 1 : 0);
-        setScore(updatedScore);
+        const isPass    = evalResult === 'pass';
+        const isNear    = evalResult === 'near';    // 80-90% correct
+        const isPartial = evalResult === 'partial'; // partially correct, needs more depth
+        const isFail    = evalResult === 'fail';
 
-        // ── 3. Determine conversation stage for the AI prompt ────────────
-        const stage = Math.min(updatedScore, SCORE_TO_WIN); // 0, 1, 2, or 3
+        const updatedScore = score + (isPass ? 1 : 0);
+        if (isPass) {
+            setScore(updatedScore);
+            setConsecutiveFails(0);
+        } else if (isNear || isPartial) {
+            setConsecutiveFails(0); // They're on the right track — no penalty
+        } else {
+            setConsecutiveFails(prev => prev + 1);
+        }
+
+        // ── 3. Determine conversation stage ──────────────────────────────
+        const stage = Math.min(updatedScore, SCORE_TO_WIN);
         const isWin = updatedScore >= SCORE_TO_WIN;
 
-        // ─── 4. Build the structured prompt (production-grade prompt engineering) ───
-        // Patterns borrowed from Cursor, Lovable, v0 system prompts:
-        // - Identity block (who you are, one crisp sentence)
-        // - Grounded product facts (no hallucination)
-        // - Conversation state block (current score, stage, what was said)
-        // - Rules block with MUST/NEVER/ALWAYS
-        // - Per-stage few-shot examples (show don't just tell)
-        // - Strict output format constraint
+        // ── 4. Build coaching-oriented behavior instruction ───────────────
+        // Stages 1-3 are sales-focused (last 3 questions)
+        const salesFocusedContext = stage >= 1;
+        const stageInstruction = selectedPersona.stageContext[stage];
+
+        let behaviorInstruction = '';
+        if (isWin) {
+            behaviorInstruction = `The trainee has fully answered all your concerns. Close the deal warmly.`;
+        } else if (isNear && evalHint) {
+            behaviorInstruction = `The trainee is very close (80-90% correct). Start your response with exactly: "I feel you are trying to convey — ${evalHint}" and then gently ask a simplified follow-up to confirm the missing piece.`;
+        } else if (isPartial && evalHint) {
+            behaviorInstruction = `The trainee gave a partial answer. Acknowledge what they got right, then ask this focused follow-up: "${evalHint}"`;
+        } else if (isFail && consecutiveFails >= 1) {
+            behaviorInstruction = `The trainee is finding this challenging. Simplify your question significantly — make it more direct and easier to answer. Be warm and encouraging.`;
+        } else if (isFail) {
+            behaviorInstruction = `The trainee didn't quite answer correctly. Gently redirect them and re-ask the same question in a simpler, clearer way.`;
+        } else {
+            behaviorInstruction = stageInstruction;
+        }
 
         const historyText = messages
             .filter(m => m.role !== 'system')
-            .map(m => `${m.role === 'model' ? selectedPersona.name + ':' : 'Sales Rep:'} ${m.content}`)
+            .map(m => `${m.role === 'model' ? selectedPersona.name + ':' : 'Trainee:'} ${m.content}`)
             .join('\n\n');
 
-        const stageInstruction = selectedPersona.stageContext[stage];
-
-        // Per-stage few-shot examples to anchor the model's tone
-        const fewShotByStage: Record<string, string> = {
-            developer: [
-                // Stage 0
-                `Sales Rep: "Condense is a streaming platform built on Rust."\n${selectedPersona.name}: "That's a starting point, but Rust alone doesn't solve our consumer group rebalancing hell. How does Condense actually handle partition reassignment without stopping message processing?"`,
-                // Stage 1
-                `Sales Rep: "Condense eliminates Zookeeper entirely, so no more ensemble management."\n${selectedPersona.name}: "Okay, that's actually useful — Zookeeper has cost us 3 on-call incidents this quarter. But what does the developer workflow look like? Can my team define a pipeline in code or are we back to YAML configs?"`,
-                // Stage 2
-                `Sales Rep: "You define pipelines in code, deploy in minutes, and it auto-scales without manual partition tuning."\n${selectedPersona.name}: "That's better. One last thing — what's the story for zero-downtime upgrades on live pipelines? Kafka rolling restarts have bitten us before."`,
-                // Stage 3
-                `Sales Rep: "Condense handles hot upgrades without consumer lag, no restart needed."\n${selectedPersona.name}: "That's solid. You've addressed the rebalancing, the DX, and the ops overhead. Let's book a meeting — I'll pull in our platform lead."`,
-            ][Math.min(stage, 3)],
-            vp: [
-                `Sales Rep: "Condense is easier to use than Kafka."\n${selectedPersona.name}: "How much easier? I need concrete numbers. How long does it take a product engineer with zero Kafka experience to ship a working pipeline?"`,
-                `Sales Rep: "A junior engineer can go from setup to a live pipeline in under a day using Condense's guided SDK."\n${selectedPersona.name}: "That's actually promising — we onboard 4-5 engineers a quarter. What's the cost model? Are we paying per message like Confluent, or is it infrastructure-based?"`,
-                `Sales Rep: "It's infrastructure-based BYOC — you pay only your cloud provider, no per-message fees."\n${selectedPersona.name}: "Okay, that's a meaningful TCO improvement. Last question — does it scale automatically if we 5x our event volume during peak season?"`,
-                `Sales Rep: "It auto-scales to infinity, no manual cluster tuning needed."\n${selectedPersona.name}: "You've addressed hiring friction, onboarding speed, cost model, and scale. That's everything I needed. Yes, let's connect on a call — I'll loop in my engineering leads."`,
-            ][Math.min(stage, 3)],
-            executive: [
-                `Sales Rep: "Condense is cheaper than MSK."\n${selectedPersona.name}: "Give me a number, not a claim. We process 30TB/month. What's the actual cost delta versus MSK at that scale?"`,
-                `Sales Rep: "At 30TB/month, typical customers see 60-70% cost reduction versus MSK because you're paying cloud infra only — no Confluent license on top."\n${selectedPersona.name}: "That's material. But my bigger concern is data residency. Does our data ever leave our cloud account, or does Condense run fully inside our VPC?"`,
-                `Sales Rep: "Condense is fully BYOC — it deploys inside your VPC, your cloud account. Zero data leaves your perimeter."\n${selectedPersona.name}: "Good. That addresses our compliance posture. Last thing — what's your SLA and support model? If this goes down at 2am, who do we call?"`,
-                `Sales Rep: "We offer 99.99% SLA with dedicated enterprise support and a named account engineer."\n${selectedPersona.name}: "Cost, data sovereignty, compliance, and enterprise support — you've covered all four. Let's connect on a call — I'll bring our security architect."`,
-            ][Math.min(stage, 3)],
-        };
-
-        const fewShotExample = fewShotByStage[selectedPersona.id] || '';
-
+        // ── 5. Build the prompt ───────────────────────────────────────────
         const prompt = isWin
-            ? `## IDENTITY
-You are ${selectedPersona.name}, ${selectedPersona.title}.
+            ? `You are ${selectedPersona.name}, ${selectedPersona.title}. The trainee has successfully addressed all your concerns. Close the deal with this exact message and nothing else: "${selectedPersona.closingMessage}"`
 
-## TASK
-The sales conversation is over. The sales rep has fully addressed your concerns. You must now close the deal.
+            : `You are ${selectedPersona.name}, ${selectedPersona.title}. You are roleplaying as a prospect in a sales training exercise.
 
-## CLOSING INSTRUCTION
-Output EXACTLY this sentence and nothing else:
-"${selectedPersona.closingMessage}"
+Your traits: ${selectedPersona.traits.join(', ')}.
 
-Do not add any preamble, do not modify the sentence, do not add any follow-up.`
+About Condense (only use these facts — do not invent others):
+- Cloud-native data streaming platform built on Rust, replaces Apache Kafka
+- Eliminates Zookeeper entirely — no ops overhead
+- Auto-scales infinitely, no manual partition tuning needed
+- BYOC: deploys inside the customer's own VPC, data never leaves their cloud
+- Developers define pipelines in code, no Kafka expertise required
+- Cost model: infrastructure-only (no per-message fees like Confluent)
 
-            : `## IDENTITY
-You are ${selectedPersona.name}, ${selectedPersona.title}. Traits: ${selectedPersona.traits.join(', ')}.
-
-## PRODUCT FACTS (grounded truth — do not invent anything outside this)
-Condense is a cloud-native data streaming platform built on Rust.
-- Replaces Apache Kafka entirely
-- Eliminates Zookeeper (no ensemble, no ops overhead)
-- Infinite auto-scaling with no manual partition tuning
-- BYOC model: deploys inside the customer's own VPC — data never leaves their cloud
-- Developers define pipelines in code; deploy in minutes with no Kafka expertise required
-- Cost model: infrastructure-only, no per-message fees like Confluent
-
-## CONVERSATION STATE
-- Current stage: ${stage} of ${SCORE_TO_WIN} (${stage === 0 ? 'not convinced yet' : stage < SCORE_TO_WIN - 1 ? 'slightly interested' : 'almost convinced — one more good answer needed'})
-- Points scored so far: ${score}/${SCORE_TO_WIN}
-
-## CONVERSATION HISTORY
+Conversation so far:
 ${historyText}
-Sales Rep: ${userText}
+Trainee: ${userText}
 
-## STAGE INSTRUCTION
-${stageInstruction}
+Your task:
+${behaviorInstruction}
+${salesFocusedContext ? '\nIMPORTANT: Keep your response focused on the business and sales value of Condense (ROI, team productivity, simplicity, cost savings).' : ''}
 
-## RULES
-1. MUST stay in character as ${selectedPersona.name} at all times.
-2. MUST ask exactly ONE follow-up question at the end. Never ask more than one.
-3. MUST keep your response to 2 sentences maximum.
-4. NEVER agree to book a meeting or say "let's connect" — that is FORBIDDEN before stage ${SCORE_TO_WIN}.
-5. NEVER say "great point", "that's interesting", "I like that" or give generic praise.
-6. NEVER invent product features not listed in PRODUCT FACTS above.
-7. ALWAYS be skeptical but professional — push for specifics, not vague claims.
-8. If the sales rep is still vague, push harder for a concrete answer.
-
-## FEW-SHOT EXAMPLE (use this as your tone and format reference)
-${fewShotExample}
-
-## YOUR RESPONSE
-Write your in-character response now. 2 sentences max. End with a question.`;
-
+Rules:
+- Be professional, respectful, and encouraging — never rude or harsh
+- Keep your response to 2-3 sentences maximum
+- End with exactly ONE clear, simple question
+- Do not give generic praise like "great point"
+- Do not agree to book a meeting until the trainee scores ${SCORE_TO_WIN} points`;
 
         try {
             let finalBotText = '';
@@ -436,12 +393,12 @@ Write your in-character response now. 2 sentences max. End with a question.`;
 
             if (isWin) {
                 finalBotText = selectedPersona.closingMessage;
-            } else if (turnsLeft === 1) { // It's their last turn and they didn't win
+            } else if (turnsLeft === 1) {
                 finalBotText = selectedPersona.dismissalMessage;
                 newTurns = 0;
             } else {
                 newTurns = turnsLeft - 1;
-                // ── 5. Stream Gemini API Output ───────────────────────────────────────
+
                 const proxyRes = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -454,16 +411,15 @@ Write your in-character response now. 2 sentences max. End with a question.`;
                     didStream = true;
                     const reader = proxyRes.body.getReader();
                     const decoder = new TextDecoder();
-                    
-                    setIsTyping(false); // Stop spinner, start streaming text
+
+                    setIsTyping(false);
                     const botMsgId = `bot-${Date.now()}`;
-                    setMessages(prev => [...prev, { id: botMsgId, role: 'model', content: "" }]);
+                    setMessages(prev => [...prev, { id: botMsgId, role: 'model', content: '' }]);
 
                     while (true) {
                         const { done, value } = await reader.read();
                         if (done) break;
                         finalBotText += decoder.decode(value, { stream: true });
-                        
                         setMessages(prev => prev.map(m => m.id === botMsgId ? { ...m, content: finalBotText } : m));
                     }
                 }
@@ -471,11 +427,11 @@ Write your in-character response now. 2 sentences max. End with a question.`;
 
             const newBotMessage: Message = { id: `bot-${Date.now()}`, role: 'model', content: finalBotText };
             if (!didStream) {
-                 setIsTyping(false);
-                 setMessages(prev => [...prev, newBotMessage]);
+                setIsTyping(false);
+                setMessages(prev => [...prev, newBotMessage]);
             }
 
-            // ── 6. Our code — not Gemini — decides the win/loss ───────────
+            // ── 6. Our code — not the AI — decides the win/loss ──────────
             if (isWin) {
                 setBattleStatus('won');
                 if (!completedMissions.includes('boss-battle')) {
@@ -501,7 +457,7 @@ Write your in-character response now. 2 sentences max. End with a question.`;
             }
 
         } catch (error: any) {
-            // ── Graceful fallback — game still works without API ────────
+            // Graceful fallback — game still works without API
             const fallbackText = isWin
                 ? selectedPersona.closingMessage
                 : selectedPersona.fallbackResponses[Math.min(stage, selectedPersona.fallbackResponses.length - 2)];
@@ -538,7 +494,7 @@ Write your in-character response now. 2 sentences max. End with a question.`;
                         CHOOSE YOUR <span className="text-red-500">OPPONENT</span>
                     </h1>
                     <p className="text-zinc-400 text-lg max-w-2xl mx-auto leading-relaxed">
-                        Each persona has different priorities and expects you to address their specific concerns. You need to hit <strong className="text-white">3 key points</strong> to convince them.
+                        Each persona has different priorities and expects you to address their specific concerns. You need to hit <strong className="text-white">4 key points</strong> to convince them.
                     </p>
                 </div>
 
@@ -631,14 +587,12 @@ Write your in-character response now. 2 sentences max. End with a question.`;
         );
     }
 
-    // Loss state is now handled inline beneath the chat header.
-
     // ─── CHAT SCREEN ────────────────────────────────────────────────────────
     const getLevelTitle = (lvl: number) => {
-        if (lvl >= 7) return "ARCHITECT";
-        if (lvl >= 5) return "VETERAN";
-        if (lvl >= 3) return "SPECIALIST";
-        return "RECRUIT";
+        if (lvl >= 7) return 'ARCHITECT';
+        if (lvl >= 5) return 'VETERAN';
+        if (lvl >= 3) return 'SPECIALIST';
+        return 'RECRUIT';
     };
     const level = Math.floor(xp / 500) + 1;
 
@@ -751,7 +705,7 @@ Write your in-character response now. 2 sentences max. End with a question.`;
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     disabled={isTyping}
-                                    placeholder="Address their concern with a specific, technical answer..."
+                                    placeholder="Address their concern with a clear, specific answer..."
                                     className="w-full bg-zinc-950 border border-zinc-700 text-white rounded-2xl pl-6 pr-16 py-4 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                                 />
                                 <button
