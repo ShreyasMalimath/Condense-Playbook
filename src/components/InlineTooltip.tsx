@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PLAYBOOK_KEYWORDS } from '../data/full_playbook';
 
+const sortedKeywords = [...PLAYBOOK_KEYWORDS].sort((a, b) => b.term.length - a.term.length);
+const patternString = `\\b(${sortedKeywords.map(k => k.term).join('|')})\\b`;
+
 interface InlineTooltipProps {
     text: string;
 }
@@ -10,10 +13,7 @@ interface InlineTooltipProps {
 export const InlineTextWithTooltips: React.FC<InlineTooltipProps> = ({ text }) => {
     if (!text) return null;
 
-    // Build a giant regex that matches any of the keywords
-    // We sort by length descending to match longest terms first (e.g. "Data Residency" before "Data")
-    const sortedKeywords = [...PLAYBOOK_KEYWORDS].sort((a, b) => b.term.length - a.term.length);
-    const regexPattern = new RegExp(`\\b(${sortedKeywords.map(k => k.term).join('|')})\\b`, 'gi');
+    const regexPattern = new RegExp(patternString, 'gi');
 
     const tokens = [];
     let lastIndex = 0;
