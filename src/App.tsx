@@ -149,6 +149,7 @@ function AppContent({ user, setUser }: { user: UserInfo | null, setUser: (u: Use
 
   const handleLogout = () => {
     localStorage.removeItem('condense_active_session');
+    localStorage.removeItem('condense_active_company');
     setUser(null);
     window.location.hash = '';
     setCurrentView('login');
@@ -261,40 +262,45 @@ function AppContent({ user, setUser }: { user: UserInfo | null, setUser: (u: Use
 }
 
 export default function App() {
-  const [user, setUser] = useState<UserInfo | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [user, setUser] = useState<UserInfo | null>(() => {
+    const activeSession = localStorage.getItem('condense_active_session');
+    const activeCompany = localStorage.getItem('condense_active_company');
+    return (activeSession && activeCompany) ? { name: activeSession, company: activeCompany } : null;
+  });
+  const [isInitializing, setIsInitializing] = useState(false);
 
-  // Auto-login on mount
+  // Background verify on mount
   useEffect(() => {
-    const initializeUser = async () => {
+    const verifyUser = async () => {
       try {
         const activeSession = localStorage.getItem('condense_active_session');
         if (activeSession) {
-          // Verify session still exists/is valid in Firestore
           const { db } = await import('./lib/firebase');
           const { doc, getDoc } = await import('firebase/firestore');
           
           const userRef = doc(db, 'users', activeSession);
           const userSnap = await getDoc(userRef);
           
-          if (userSnap.exists()) {
-            const userData = userSnap.data();
-            setUser({ name: activeSession, company: userData.companyCode });
-          } else {
-            // Invalid session
+          if (!userSnap.exists()) {
             localStorage.removeItem('condense_active_session');
+            localStorage.removeItem('condense_active_company');
+            setUser(null);
+            window.location.hash = '';
+          } else {
+             const userData = userSnap.data();
+             if (userData.companyCode !== localStorage.getItem('condense_active_company')) {
+                localStorage.setItem('condense_active_company', userData.companyCode);
+                setUser(prev => prev ? { ...prev, company: userData.companyCode } : null);
+             }
           }
         }
       } catch (e) {
         console.error("Failed to restore session", e);
-      } finally {
-        setIsInitializing(false);
       }
     };
 
-    initializeUser();
+    verifyUser();
   }, []);
-
 
   if (isInitializing) return null;
 

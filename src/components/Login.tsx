@@ -66,6 +66,7 @@ export const Login: React.FC<LoginProps> = ({ onStart }) => {
                 await setDoc(userRef, userData);
                 
                 localStorage.setItem('condense_active_session', username);
+                localStorage.setItem('condense_active_company', company.trim());
                 onStart(username, company.trim(), false);
             } else {
                 // Log In
@@ -83,6 +84,7 @@ export const Login: React.FC<LoginProps> = ({ onStart }) => {
                 }
 
                 localStorage.setItem('condense_active_session', username);
+                localStorage.setItem('condense_active_company', userData.companyCode);
                 
                 // Update last active
                 await setDoc(userRef, { lastActive: serverTimestamp() }, { merge: true });
