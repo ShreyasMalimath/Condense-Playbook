@@ -107,37 +107,71 @@ function AppContent({ user, setUser }: { user: UserInfo | null, setUser: (u: Use
   const totalPossibleXP = (missionsWithQuizzes * 100) + 2000;
 
 
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (!user) return; // Don't process hashes if not logged in
+      const hash = window.location.hash.slice(1);
+      
+      if (!hash || hash === 'dashboard') {
+        setActiveChapterId(null);
+        setCurrentView('dashboard');
+      } else if (hash === 'boss') {
+        setCurrentView('boss');
+      } else if (hash.startsWith('learning-')) {
+        setActiveChapterId(hash.replace('learning-', ''));
+        setCurrentView('learning');
+      } else if (hash.startsWith('quiz-')) {
+        setActiveChapterId(hash.replace('quiz-', ''));
+        setCurrentView('quiz');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Process initial hash on load
+    if (user && window.location.hash) {
+      handleHashChange();
+    }
+    
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [user]);
+
   const handleLogin = (name: string, company: string, isReturning: boolean) => {
     setUser({ name, company });
-    setCurrentView(isReturning ? 'dashboard' : 'welcome');
+    if (isReturning) {
+      window.location.hash = 'dashboard';
+      setCurrentView('dashboard');
+    } else {
+      window.location.hash = ''; // clear for welcome
+      setCurrentView('welcome');
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('condense_active_session');
     setUser(null);
+    window.location.hash = '';
     setCurrentView('login');
   };
 
   const handleWelcomeComplete = () => {
-    setCurrentView('dashboard');
+    window.location.hash = 'dashboard';
   };
 
   const handleSelectMission = (chapterId: string) => {
     if (chapterId === 'boss-battle') {
-      setCurrentView('boss');
+      window.location.hash = 'boss';
     } else {
-      setActiveChapterId(chapterId);
-      setCurrentView('learning');
+      window.location.hash = `learning-${chapterId}`;
     }
   };
 
   const handleStartQuiz = () => {
-    setCurrentView('quiz');
+    window.location.hash = `quiz-${activeChapterId}`;
   };
 
   const handleReturnToDashboard = () => {
-    setActiveChapterId(null);
-    setCurrentView('dashboard');
+    window.location.hash = 'dashboard';
   };
 
   if (currentView === 'login' || !user) {
