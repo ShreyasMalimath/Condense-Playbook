@@ -53,61 +53,68 @@ export const GameProvider: React.FC<{ children: React.ReactNode, userId?: string
 
     useEffect(() => {
         const fetchState = async () => {
-            setIsStateLoaded(false); // Lock sync while fetching new user data
+            setIsStateLoaded(false);
             if (!userId) {
                 resetGame();
                 setIsStateLoaded(true);
                 return;
             }
 
+            let hasOptimisticLoad = false;
+
+            // 1. Optimistic Local Load
             try {
-                // First try Firestore (Source of Truth)
+                const savedStateStr = localStorage.getItem(`condense_state_${userId}`);
+                if (savedStateStr) {
+                    const state = JSON.parse(savedStateStr);
+                    if (state && typeof state === 'object') {
+                        setXp(state.xp || 0);
+                        setCompletedMissions(state.completedMissions || []);
+                        setCorrectAnswers(state.correctAnswers || 0);
+                        setTotalQuestions(state.totalQuestions || 0);
+                        setMissionScores(state.missionScores || {});
+                        setChatTranscripts(state.chatTranscripts || {});
+                        
+                        hasOptimisticLoad = true;
+                        setLoadedUserId(userId);
+                        setIsStateLoaded(true); // Release lock immediately for instant UI
+                    }
+                }
+            } catch (e) {
+                console.error("Optimistic load failed:", e);
+            }
+
+            // 2. Background Cloud Sync (Merge)
+            try {
                 const userRef = doc(db, 'users', userId);
                 const userSnap = await getDoc(userRef);
 
                 if (userSnap.exists()) {
                     const data = userSnap.data();
-                    setXp(data.xp || 0);
-                    setCompletedMissions(data.completedMissions || []);
-                    setCorrectAnswers(data.correctAnswers || 0);
-                    setTotalQuestions(data.totalQuestions || 0);
-                    setMissionScores(data.quizResults || {});
-                    setChatTranscripts(data.chatTranscripts || {});
-                } else {
-                    // Fallback to localStorage if Firestore is empty (legacy users)
-                    const savedStateStr = localStorage.getItem(`condense_state_${userId}`);
-                    if (savedStateStr) {
-                        const state = JSON.parse(savedStateStr);
-                        setXp(state.xp || 0);
-                        setCompletedMissions(state.completedMissions || []);
-                        setCorrectAnswers(state.correctAnswers || 0);
-                        setTotalQuestions(state.totalQuestions || 0);
-                        setMissionScores(state.missionScores || {});
-                        setChatTranscripts(state.chatTranscripts || {});
-                    } else {
-                        resetGame();
-                    }
+                    
+                    setXp(prev => Math.max(prev, data.xp || 0));
+                    
+                    setCompletedMissions(prev => {
+                        const merged = new Set([...prev, ...(data.completedMissions || [])]);
+                        return Array.from(merged);
+                    });
+                    
+                    setCorrectAnswers(prev => Math.max(prev, data.correctAnswers || 0));
+                    setTotalQuestions(prev => Math.max(prev, data.totalQuestions || 0));
+                    
+                    setMissionScores(prev => ({ ...(data.quizResults || {}), ...prev }));
+                    setChatTranscripts(prev => ({ ...(data.chatTranscripts || {}), ...prev }));
+                } else if (!hasOptimisticLoad) {
+                    resetGame();
                 }
             } catch (err) {
-                console.error("Failed to fetch game state from Firestore", err);
-                // Last ditch fallback to local storage
-                const savedStateStr = localStorage.getItem(`condense_state_${userId}`);
-                if (savedStateStr) {
-                    try {
-                        const state = JSON.parse(savedStateStr);
-                        setXp(state.xp || 0);
-                        setCompletedMissions(state.completedMissions || []);
-                        setCorrectAnswers(state.correctAnswers || 0);
-                        setTotalQuestions(state.totalQuestions || 0);
-                        setMissionScores(state.missionScores || {});
-                        setChatTranscripts(state.chatTranscripts || {});
-                    } catch (e) {
-                        console.error("Local storage fallback failed", e);
-                    }
-                }
+                console.warn("Silent cloud fetch failed:", err);
+                if (!hasOptimisticLoad) resetGame();
             } finally {
-                setLoadedUserId(userId);
-                setIsStateLoaded(true);
+                if (!hasOptimisticLoad) {
+                    setLoadedUserId(userId);
+                    setIsStateLoaded(true);
+                }
             }
         };
 
